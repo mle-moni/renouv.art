@@ -39,6 +39,9 @@ function newMsg(txt, socket, dbo) {
                                 };
                             } else {
                                 obj.notifs.num ++;
+                                if (obj.notifs.arr == undefined) {
+                                    obj.notifs.arr = [];
+                                }
                                 obj.notifs.arr.unshift(notifObj);
                                 if (obj.notifs.arr.length > 20) {
                                     obj.notifs.arr.pop();
