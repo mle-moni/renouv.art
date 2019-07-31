@@ -332,15 +332,17 @@ socket.on("notifDispo", ()=>{
 
 socket.on("notif", (notifs)=>{
 	notifBoard.innerHTML = "";
-	for (let i = 0; i < notifs.arr.length; i++) {
-		let link = document.createElement("p");
-		link.className = "singleNotif";
-		link.appendChild(document.createTextNode(notifs.arr[i].txt));
-		link.href = window.location.origin + "/" + notifs.arr[i].href;
-		link.onclick = (e)=>{
-			location.replace(e.path[0].href);
+	if (notifs.hasOwnProperty("arr")) {
+		for (let i = 0; i < notifs.arr.length; i++) {
+			let link = document.createElement("p");
+			link.className = "singleNotif";
+			link.appendChild(document.createTextNode(notifs.arr[i].txt));
+			link.href = window.location.origin + "/" + notifs.arr[i].href;
+			link.onclick = (e)=>{
+				location.replace(e.path[0].href);
+			}
+			notifBoard.appendChild(link);
 		}
-		notifBoard.appendChild(link);
 	}
 	notifNum = notifs.num;
 	if (notifNum !== 0) {

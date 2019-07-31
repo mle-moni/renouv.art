@@ -2,16 +2,16 @@ const http = require('http');
 const fs = require('fs');
 const MongoClient = require('mongodb').MongoClient;
 const url = "mongodb://localhost:27017/";
-const Hashes = require('jshashes');
-const handler = require('./srv_files/handler.js').handler;
+const handler = require('./srv_files/handler').handler;
+const connection = require("./srv_files/connection");
+const admin = require("./srv_files/admin");
+const upload = require("./srv_files/upload");
+const chat = require("./srv_files/chat");
 
 const Analyse = {
     connnected: 0,
     total: 0
 };
-    //new Hashes.SHA256().b64("salut") // how to SHA256 ;)
-
-let files = {};
 
 const livePlayers = {};
 
@@ -42,82 +42,7 @@ MongoClient.connect(url, {
         Analyse.total++;
         
         socket.on("createAcc", (obj)=>{
-            if (obj.hasOwnProperty("psd") && obj.hasOwnProperty("passwd")) {
-                let userName = obj.psd;
-                let passwd = new Hashes.SHA256().b64(obj.passwd);
-                if (userName.length > 30) {
-                    socket.emit("fail", "create");
-                    socket.emit("log", [{
-                        id: "result",
-                        msg: "Votre nom de compte ne peut dépasser 30 charactères."
-                    }]);
-                } else if (userName === "") {
-                    socket.emit("fail", "create");
-                    socket.emit("log", [{
-                        id: "result",
-                        msg: "Veuillez renseigner le champ 'Nom du compte'"
-                    }]);
-                } else if (/\//.test(userName) ) {
-                    socket.emit("fail", "create");
-                    socket.emit("log", [{
-                        id: "result",
-                        msg: "Erreur, le caractère / est interdit !"
-                    }]);
-                } else if (/\\/.test(userName)) {
-                    socket.emit("fail", "create");
-                    socket.emit("log", [{
-                        id: "result",
-                        msg: "Erreur, le caractère \\ est interdit !"
-                    }]);
-                } else if (/srv/.test(userName)) {
-                    socket.emit("fail", "create");
-                    socket.emit("log", [{
-                        id: "result",
-                        msg: "Erreur, votre titre ne peut pas contenir : srv !"
-                    }]);
-                } else if (/mayeul/i.test(userName)) {
-                    socket.emit("fail", "create");
-                    socket.emit("log", [{
-                        id: "result",
-                        msg: "Erreur, le mot 'Mayeul' est réservé !"
-                    }]);
-                } else {
-
-                    dbo.collection("connection").findOne({
-                        psd: userName
-                    }, function(err, result) {
-                        if (err) throw err;
-                        if (result === null) {
-                            const myobj = {
-                                psd: userName,
-                                passwd: passwd
-                            };
-                            const accObj = {
-                                psd: userName,
-                                stuff: "",
-                                totalLikes: 0,
-                                moneyLikes: 0
-                            };
-                            dbo.collection("connection").insertOne(myobj, function(err, res) {
-                                if (err) throw err;
-                                socket.emit("log", [{
-                                    id: "result",
-                                    msg: "Votre compte à bien été créé ! \n Votre nom d'utilisateur est " + userName + "."
-                                }], true);
-                            });
-                            dbo.collection("account").insertOne(accObj, function(err, res) {
-                                if (err) throw err;
-                            });
-                        } else {
-                            socket.emit("fail", "create");
-                            socket.emit("log", [{
-                            id: "result",
-                            msg: "Ce nom d'utilisateur est déjà pris :c"
-                        }] );
-                    }
-                    });
-                }
-            }
+            connection.createAccount(obj, socket, dbo);            
         });
 
         socket.on("decomoi", ()=>{
@@ -125,68 +50,11 @@ MongoClient.connect(url, {
             delete(socket.passwd);
         });
         socket.on("connectemoistp", (obj, coSettings)=>{
-            if (socket.hasOwnProperty("psd")) {
-                socket.emit("fail", "connect");
-                        socket.emit("log", [{
-                            id: "result",
-                            msg: "Vous êtes déjà connecté au nom de "+
-                            socket.psd+
-                            ", <u style='' onclick='socket.emit(\"decomoi\"); let direc = sessionStorage.getItem(\"goTo\"); sessionStorage.clear(); localStorage.clear(); sessionStorage.setItem(\"goTo\", direc); document.getElementById(\"result\").innerHTML = \"\";'>Se déconnecter</u>"
-                        }]);
-            } else {
-                if (obj.hasOwnProperty("psd") && obj.hasOwnProperty("passwd")) {
-                    let userName = obj.psd;
-                    let passwd = new Hashes.SHA256().b64(obj.passwd);
-                    dbo.collection("connection").findOne({
-                        psd: userName
-                    }, function(err, result) {
-                        if (err) throw err;
-                        if (result === null) {
-                            socket.emit("fail", "connect");
-                            socket.emit("log", [{
-                                id: "result",
-                                msg: "Ce nom de compte n'existe pas..."
-                            }]);
-                        } else {
-                            if (passwd === result.passwd) {
-                                socket.psd = userName;
-                                socket.passwd = passwd;
-                                socket.emit("log", [{
-                                    id: "result",
-                                    msg: "Vous êtes bien connecté !"
-                                }]);
-                                socket.emit("succes", obj);
-                            } else {
-                                socket.emit("fail", "connect");
-                                socket.emit("log", [{
-                                    id: "result",
-                                    msg: "Mot de passe éronné."
-                                }]);
-                                if (coSettings === "hard") {
-                                    socket.emit("logAndComeBack");
-                                }
-                            }
-                        }
-                    });
-                } else {
-                    console.log("violation du protocole")
-                }
-            }
+            connection.connect(obj, coSettings, socket, dbo);
         });
 
         socket.on("testPsd", (psd, num)=>{
-            if (typeof(psd) === "string" && typeof(num) === "number") {
-                dbo.collection("connection").findOne({
-                    psd: psd
-                }, function(err, result) {
-                    if (err) throw err;
-                    if (result === null) {
-                        socket.emit("testPsd", true, num);
-                    } else {
-                        socket.emit("testPsd", false, num);
-                    }
-                });
-            }
+            connection.testPsd(psd, num, socket, dbo);
         });
 
         socket.on("testFile", (obj)=>{
@@ -374,117 +242,11 @@ MongoClient.connect(url, {
         });
 
         socket.on("hideContent", query=>{
-            if (socket.hasOwnProperty("psd")) {
-                if (socket.psd === "admin.lucas" || socket.psd === "admin.mayeul") {
-                    if (query.hasOwnProperty("auteur") && query.hasOwnProperty("titre")) {
-                        dbo.collection("tags").find({
-                            auteur: query.auteur
-                        }).toArray(function(err, result) {
-                            if (err) throw err;
-                            if (result !== null) {
-                                for (let i = 0; i < result.length; i++) {
-                                    if (result[i].titre === query.titre) {
-                                        const obj = result[i];
-                                        const objID = obj["_id"];
-                                        const myquery = { "_id": objID };
-                                        const newvalues = { $set: {visible: false } };
-                                        dbo.collection("tags").updateOne(myquery, newvalues, function(err, res) {
-                                            if (err) throw err;
-                                            socket.emit("log1", query.auteur+" - "+query.titre+ " a été censuré.");
-                                            const objToStore = {
-                                                date: new Date(),
-                                                action: query.auteur+" - "+query.titre+ " a été censuré",
-                                                auteur: socket.psd
-                                            };
-                                            dbo.collection("administration").insertOne(objToStore, function(err, res) {
-                                                if (err) throw err;
-                                            });
-                                        });
-                                    }
-                                }
-                            }
-                        });
-                    }
-                } else {
-                    //on arrete tout ICI
-                    socket.emit("log1", "acces denied");
-                }
-            }
+            admin.hideContent(query, socket, dbo);
         });
 
         socket.on("deleteContent", query=>{
-            if (socket.hasOwnProperty("psd")) {
-                if (socket.psd === "admin.mayeul") {
-                    if (query.hasOwnProperty("auteur") && query.hasOwnProperty("titre")) {
-                        dbo.collection("tags").find({
-                            auteur: query.auteur
-                        }).toArray(function(err, result) {
-                            if (err) throw err;
-                            if (result !== null) {
-                                for (let i = 0; i < result.length; i++) {
-                                    if (result[i].titre === query.titre) {
-                                        const obj = result[i];
-                                        const objID = obj["_id"];
-                                        const myquery = { "_id": objID };
-                                        dbo.collection("tags").deleteOne(myquery, function(err, res) {
-                                            if (err) throw err;
-                                            socket.emit("log1", query.auteur +" - "+query.titre+ " a été supprimé des données de recherche.");
-                                        });
-                                    }
-                                }
-                            }
-                        });
-                        dbo.collection("data").find({
-                            auteur: query.auteur
-                        }).toArray(function(err, result) {
-                            if (err) throw err;
-                            if (result !== null) {
-                                for (let i = 0; i < result.length; i++) {
-                                    if (result[i].titre === query.titre) {
-                                        if (result[i].type === "musique") {
-                                            fs.unlink('./generatedFiles/'+result[i].auteur+"_"+result[i].titre+".mp3", (err) => {
-                                                if (err) throw err;
-                                            });
-                                        } else if (result[i].type === "photo") {
-                                            fs.unlink('./genImg/'+result[i].auteur+"_"+result[i].titre+".jpg", (err) => {
-                                                if (err) throw err;
-                                            });
-                                            fs.unlink('./genImg/mini'+result[i].auteur+"_"+result[i].titre+".jpg", (err) => {
-                                                if (err) throw err;
-                                            });
-                                        } else if (result[i].type === "dessin") {
-                                            fs.unlink('./genImg/'+result[i].auteur+"_"+result[i].titre+".png", (err) => {
-                                                if (err) throw err;
-                                            });
-                                            fs.unlink('./genImg/mini'+result[i].auteur+"_"+result[i].titre+".png", (err) => {
-                                                if (err) throw err;
-                                            });
-                                        }
-                                        const obj = result[i];
-                                        const objID = obj["_id"];
-                                        const myquery = { "_id": objID };
-                                        dbo.collection("data").deleteOne(myquery, function(err, res) {
-                                            if (err) throw err;
-                                            socket.emit("log1", query.auteur +" - "+query.titre+ " a été supprimé de la base de donnée.");
-                                            const objToStore = {
-                                                date: new Date(),
-                                                action: query.auteur+" - "+query.titre+ " a été supprimé de la base de donnée",
-                                                auteur: socket.psd
-                                            };
-                                            dbo.collection("administration").insertOne(objToStore, function(err, res) {
-                                                if (err) throw err;
-                                            });
-                                        });
-                                    }
-                                }
-                            }
-                        });
-                    }
-                } else {
-                    //on arrete tout ICI
-                    socket.emit("log1", "acces denied");
-                }
-            }
+            admin.deleteContent(query, socket, dbo);
         });
 
         socket.on("givePsd", ()=> {
@@ -492,72 +254,23 @@ MongoClient.connect(url, {
         });
 
         socket.on("getAdminFile", ()=>{
-            if (socket.psd === "admin.lucas" || socket.psd === "admin.mayeul") {
-                dbo.collection("administration").find({}).toArray(function(err, result) {
-                    if (err) throw err;
-                    if (result !== null) {
-                        socket.emit("getAdminFile", result);
-                    }
-                });
-            }
+            admin.getFile(socket, dbo);
         });
 
         socket.on("flushAdminFile", ()=>{
-            if (socket.psd === "admin.mayeul") {
-                dbo.collection("administration").deleteMany({}, function(err, obj) {
-                    if (err) throw err;
-                    const objToStore = {
-                        date: new Date(),
-                        action: "Le fichier admin à été vidé de ses "+obj.result.n+" actions",
-                        auteur: socket.psd
-                    };
-                    dbo.collection("administration").insertOne(objToStore, function(err, res) {
-                        if (err) throw err;
-                    });
-                });
-            }
+            admin.flushFile(socket, dbo);
         });
 
         socket.on("getHidden", ()=>{
-            if (socket.psd === "admin.lucas" || socket.psd === "admin.mayeul") {
-                dbo.collection("tags").find({
-                    visible: false
-                }).toArray(function(err, result) {
-                    if (err) throw err;
-                    if (result !== null) {
-                        socket.emit("res", result, true);
-                    } else {
-                        // rien n'a été trouvé
-                        socket.emit("res", [], false);
-                    }
-                });
-            }
+            admin.getHidden(socket, dbo);
         });
 
         socket.on("showHidden", ()=>{
-            if (socket.psd === "admin.lucas" || socket.psd === "admin.mayeul") {
-                const myquery = { visible: false };
-                const newvalues = {$set: {visible: true} };
-                dbo.collection("tags").updateMany(myquery, newvalues, function(err, obj) {
-                    if (err) throw err;
-                    const objToStore = {
-                        date: new Date(),
-                        action: obj.result.nModified+" objets ont été rendu visible à nouveau",
-                        auteur: socket.psd
-                    };
-                    dbo.collection("administration").insertOne(objToStore, function(err, res) {
-                        if (err) throw err;
-                    });
-                });
-            }
+            admin.showHidden(socket, dbo);
         });
 
         socket.on("disconnect", ()=>{
-            if (socket.hasOwnProperty("fileName")) {
-                if (files.hasOwnProperty(socket.fileName) ) {
-                    delete(files[socket.fileName]);
-                }
-            }
+            upload.destroy(socket);
             if (players.hasOwnProperty(socket.id)) {
                 delete(players[socket.id]);
                 socket.broadcast.emit("deletePlayer", socket.id);
@@ -576,154 +289,15 @@ MongoClient.connect(url, {
         });
 
         socket.on('slice upload', (data) => {
-            if (socket.hasOwnProperty("fileName") && data.hasOwnProperty("slice") && data.hasOwnProperty("cursor") &&
-             data.hasOwnProperty("total")) {
-                if (!files.hasOwnProperty(socket.fileName)) {
-                    files[socket.fileName] = [];
-                    files[socket.fileName].push(data.slice);
-                    socket.emit("request slice upload", data.cursor);
-                } else {
-                    files[socket.fileName].push(data.slice);
-                    if (data.cursor < data.total) {
-                        socket.emit("request slice upload", data.cursor);
-                    } else {
-                        const b64fileURI = files[socket.fileName].join("");
-                        if (/audio\/mp3/.test(b64fileURI) && b64fileURI.length < 40000000) {
-                            const b64file = b64fileURI.split(';base64,').pop();
-                            if (b64fileURI.length === data.total) {
-                                fs.writeFile("generatedFiles/"+socket.fileName+".mp3", b64file, {encoding: 'base64'}, function(err) {
-                                    socket.objToStore.contenu = "";
-                                    dbo.collection("tags").insertOne(socket.tagObj, function(err, res) {
-                                        if (err) throw err;
-                                        dbo.collection("data").insertOne(socket.objToStore, function(err, res) {
-                                            if (err) throw err;
-                                            socket.emit("fileSucces", true);
-                                            delete(files[socket.fileName]);
-                                            delete(socket.tagObj);
-                                            delete(socket.objToStore);
-                                            delete(socket.fileName);
-                                        });
-                                    });
-                                });
-                            } else {
-                                socket.emit("fileError", "Echec de l'envoi");
-                                delete(files[socket.fileName]);
-                                delete(socket.tagObj);
-                                delete(socket.objToStore);
-                                delete(socket.fileName);
-                            }
-                        } else {
-                            socket.emit("fileError", "Echec de l'envoi : mauvais type de fichier");
-                            delete(files[socket.fileName]);
-                            delete(socket.tagObj);
-                            delete(socket.objToStore);
-                            delete(socket.fileName);
-                        }
-                    }
-                }
-            }
+            upload.sliceUpload(data, socket, dbo)
         });
 
         socket.on('slice upload mini', (data) => {
-            if (socket.hasOwnProperty("fileName") && data.hasOwnProperty("slice") && data.hasOwnProperty("cursor") &&
-             data.hasOwnProperty("total")) {
-                if (!files.hasOwnProperty(socket.fileName)) {
-                    files[socket.fileName] = [];
-                    files[socket.fileName].push(data.slice);
-                    socket.emit("request slice upload mini", data.cursor);
-                } else {
-                    files[socket.fileName].push(data.slice);
-                    if (data.cursor < data.total) {
-                        socket.emit("request slice upload mini", data.cursor);
-                    } else {
-                        const b64fileURI = files[socket.fileName].join("");
-                        let imgType = "";
-                        if (/image\/png/.test(b64fileURI)) {
-                            imgType = ".png";
-                        } else if (/image\/jp/.test(b64fileURI)) {
-                            imgType = ".jpg";
-                        }
-                        if (imgType !== "" && b64fileURI.length < 40000000) {
-                            const b64file = b64fileURI.split(';base64,').pop();
-                            if (b64fileURI.length === data.total) {
-                                fs.writeFile("genImg/mini"+socket.fileName+imgType, b64file, {encoding: 'base64'}, function(err) {
-                                    if (err) throw err;
-                                    delete(files[socket.fileName]);
-                                    socket.emit("start main");
-                                });
-                            } else {
-                                socket.emit("fileError", "Echec de l'envoi");
-                                delete(files[socket.fileName]);
-                                delete(socket.tagObj);
-                                delete(socket.objToStore);
-                                delete(socket.fileName);
-                            }
-                        } else {
-                            socket.emit("fileError", "Echec de l'envoi : mauvais type de fichier");
-                            delete(files[socket.fileName]);
-                            delete(socket.tagObj);
-                            delete(socket.objToStore);
-                            delete(socket.fileName);
-                        }
-                    }
-                }
-            }
+            upload.sliceUploadMini(data, socket, dbo);
         });
 
         socket.on('slice upload main', (data) => {
-            if (socket.hasOwnProperty("fileName") && data.hasOwnProperty("slice") && data.hasOwnProperty("cursor") &&
-             data.hasOwnProperty("total")) {
-                if (!files.hasOwnProperty(socket.fileName)) {
-                    files[socket.fileName] = [];
-                    files[socket.fileName].push(data.slice);
-                    socket.emit("request slice upload main", data.cursor);
-                } else {
-                    files[socket.fileName].push(data.slice);
-                    if (data.cursor < data.total) {
-                        socket.emit("request slice upload main", data.cursor);
-                    } else {
-                        const b64fileURI = files[socket.fileName].join("");
-                        let imgType = "";
-                        if (/image\/png/.test(b64fileURI)) {
-                            imgType = ".png";
-                        } else if (/image\/jp/.test(b64fileURI)) {
-                            imgType = ".jpg";
-                        }
-                        if (imgType !== "" && b64fileURI.length < 40000000) {
-                            const b64file = b64fileURI.split(';base64,').pop();
-                            if (b64fileURI.length === data.total) {
-                                fs.writeFile("genImg/"+socket.fileName+imgType, b64file, {encoding: 'base64'}, function(err) {
-                                    if (err) throw err;
-                                    socket.objToStore.contenu = "";
-                                    dbo.collection("tags").insertOne(socket.tagObj, function(err, res) {
-                                        if (err) throw err;
-                                        dbo.collection("data").insertOne(socket.objToStore, function(err, res) {
-                                            if (err) throw err;
-                                            socket.emit("fileSucces", true);
-                                            delete(files[socket.fileName]);
-                                            delete(socket.tagObj);
-                                            delete(socket.objToStore);
-                                            delete(socket.fileName);
-                                        });
-                                    });
-                                });
-                            } else {
-                                socket.emit("fileError", "Echec de l'envoi");
-                                delete(files[socket.fileName]);
-                                delete(socket.tagObj);
-                                delete(socket.objToStore);
-                                delete(socket.fileName);
-                            }
-                        } else {
-                            socket.emit("fileError", "Echec de l'envoi : mauvais type de fichier");
-                            delete(files[socket.fileName]);
-                            delete(socket.tagObj);
-                            delete(socket.objToStore);
-                            delete(socket.fileName);
-                        }
-                    }
-                }
-            }
+            upload.sliceUploadMain(data, socket, dbo);
         });
 
         socket.on("connections", (str)=>{
@@ -733,78 +307,15 @@ MongoClient.connect(url, {
         });
 
         socket.on("getChat", ()=>{
-            dbo.collection("chat").find({}).toArray(function(err, result) {
-                if (err) throw err;
-                socket.emit("getChat", result);
-            });
-
+            chat.getAll(socket, dbo);
         });
 
         socket.on("chatTxt", (txt)=>{
-            let valid = true;
-            if (txt === "" || /^ *$/.test(txt) || txt.length > 1000) {
-                valid = false;
-            }
-            if (valid) {
-                if (socket.hasOwnProperty("psd")) {
-                    let myobj = { psd: socket.psd, txt: txt };
-                    dbo.collection("chat").insertOne(myobj, function(err, res) {
-                        if (err) throw err;
-                        socket.emit("msgTxt", myobj);
-                        socket.broadcast.emit("msgTxt", myobj);
-                        // on enregistre la notification dans tous les comptes des utilisateurs
-                        dbo.collection("account").find({}).toArray(function(err, result) {
-                            let notifObj = {
-                                txt: socket.psd + " à écrit dans le chat général.",
-                                href: "chat"
-                            };
-                            for (let i = 0; i < result.length; i++) {
-                                if (result[i].psd !== socket.psd) {
-                                    let obj = result[i];
-                                    if (obj.notifs === undefined) {
-                                        obj.notifs = {
-                                            arr: [notifObj],
-                                            num: 1
-                                        };
-                                    } else {
-                                        obj.notifs.num ++;
-                                        obj.notifs.arr.unshift(notifObj);
-                                        if (obj.notifs.arr.length > 20) {
-                                            obj.notifs.arr.pop();
-                                        }
-                                    }
-                                    const objID = obj["_id"];
-                                    const myquery = { "_id": objID };
-                                    const newvalues = obj;
-                                    dbo.collection("account").replaceOne(myquery, newvalues, function(err, res) {
-                                        if (err) throw err;
-                                        socket.broadcast.emit("notifDispo");
-                                    });
-                                }
-                            }
-                        });
-                    });
-
-                } else {
-                    socket.emit("chatErr", "Vous devez être connecté : <a style='color: blue; cursor: pointer;' onclick=\"brb()\">Se connecter</a>");
-                }
-            } else {
-                socket.emit("chatErr", "Le message que vous avez envoyé a été considéré comme vide ou spam.");
-            }
+            chat.newMsg(txt, socket, dbo);
         });
 
         socket.on("deleteChat", str=>{
-            if (socket.psd === "admin.mayeul") {
-                dbo.collection("chat").deleteMany({txt: new RegExp(str)}, function(err, obj) {
-                    if (err) throw err;
-                    socket.emit("refreshChat");
-                    socket.broadcast.emit("refreshChat");
-                    setTimeout(()=>{
-                        socket.emit("msgTxt", {psd: "ADMIN", txt: obj.result.n+" messages supprimés."});
-                        socket.broadcast.emit("msgTxt", {psd: "ADMIN", txt: obj.result.n+" messages supprimés."});
-                    }, 500);
-                });
-            }
+            chat.deleteMsg(str, socket, dbo);
         });
 
         socket.on("resetLikes", ()=>{
