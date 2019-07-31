@@ -1,0 +1,283 @@
+<!doctype html>
+<html lang="fr">
+
+<head>
+    <meta charset="utf-8">
+    <title>MAP CREATOR</title>
+    <style>
+        .tile {
+            margin-right: 3px;
+            border: solid;
+            cursor: pointer;
+        }
+        .tools {
+            margin: 5px;
+            display: inline;
+            font-size: 40px;
+            visibility: hidden;
+        }
+        html {
+            user-select: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="cont" >
+        <img id="tampon" style="border: solid;" class="tools">
+        <div id="cp" onclick="copy()" style="cursor: pointer; color: blue;" class="tools">
+            Copy map to clipboard (lua format)
+        </div>
+        <div id="load" class="tools" onclick="load()" style="cursor: pointer; color: green;">Modify map from clipboard</div>
+        <div id="grid" class="tools" onclick="grid()" style="cursor: pointer;">Grid</div>
+    </div>
+    <br>
+    <br>
+    <canvas id="canvas" width="1344" height="768" style="position: relative; left: -5px; top: -5px;"></canvas>
+    <canvas id="tileCanvas" width="32" height="32"></canvas>
+
+    <div id="tileset" style="display: flex;"></div>
+    <script>
+        let tampon = 0;
+        const map = [];
+        for (let i = 0; i < 24; i++) {
+            map.push([]);
+            for (let a = 0; a < 42; a++) {
+                map[i].push(0);
+            }
+        }
+        const GRID = {
+            b: true,
+            n: 0
+        };
+        window.onload = function() {
+                const drop = document.getElementsByTagName("body")[0];
+                drop.addEventListener('drop', drop_handler, false);
+                drop.addEventListener('dragenter', dragenter_handler, false);
+                drop.addEventListener('dragover', dragenter_handler, false);
+                drop.addEventListener('dragleave', dragleave_handler, false);
+            }
+	        // Événement "dragenter" et "dragover"
+            function dragenter_handler(e) {
+                e.stopPropagation();
+                e.preventDefault();
+            }
+            // Événement "dragleave"
+            function dragleave_handler(e) {
+                e.stopPropagation();
+                e.preventDefault();
+            }
+            // Événement "drop"
+            function drop_handler(e) {
+                e.stopPropagation();
+                e.preventDefault();   
+                const files = [].slice.call(e.dataTransfer.files);
+                const reader = new FileReader();
+				reader.onload = function (event) {
+                    typageEtEnvoi(files[0], event.target.result);
+				};
+				reader.readAsDataURL(files[0]);
+            }
+            function typageEtEnvoi(file, dataUri) {
+                if (/^data:image/.test(dataUri)) {
+                    const img = new Image();
+                    img.src = dataUri;
+                    draw(img);
+                }             
+            }
+
+            let mainInterval;
+            function draw(img) {
+                clearInterval(mainInterval);
+                document.getElementById("tileset").innerHTML = "";
+                const canvas = document.getElementById('tileCanvas');
+                const ctx = canvas.getContext("2d");
+                let loaded = false;
+                for (let i = 0; i < 18; i++) {
+                    setTimeout(()=>{
+                        ctx.drawImage(img, 1+(i*32)+i, 1, 32, 32, 0, 0, 32, 32);
+                        const tile = document.createElement("img");
+                        tile.src = canvas.toDataURL();
+                        tile.className = "tile";
+                        tile.onclick = () => {
+                            tampon = i;
+                            document.getElementById("tampon").src = document.getElementsByClassName("tile")[i].src;
+                        }
+                        document.getElementById("tileset").appendChild(tile);
+                        ctx.clearRect(0,0,32,32);
+                        if (i === 17) loaded = true;
+                    }, i);
+                }
+                const interv = setInterval(()=>{
+                    if (loaded) {
+                        clearInterval(interv);
+                        let I_can_draw = false;
+                        const tileMap = document.getElementsByClassName("tile");
+                        const canvas = document.getElementById('canvas');
+                        const ctx = canvas.getContext("2d");
+                        mainInterval = setInterval(()=>{
+                            ctx.clearRect(0,0,canvas.width, canvas.height);                            
+                            for (let i = 0; i < map.length; i++) {
+                                for (let a = 0; a < map[i].length; a++) {
+                                    ctx.drawImage(tileMap[map[i][a]], a*32, i*32);
+                                }
+                            }
+                            if (GRID.b) {
+                                for (let i = 0; i < map[0].length; i++) {
+                                    ctx.beginPath();
+                                    ctx.moveTo(i*32,0);
+                                    ctx.lineTo(i*32,32*24);
+                                    ctx.stroke();
+                                }
+                                for (let i = 0; i < map.length; i++) {
+                                    ctx.beginPath();
+                                    ctx.moveTo(0, i*32);
+                                    ctx.lineTo(32*42, i*32);
+                                    ctx.stroke();
+                                }
+                            }
+                        },50);
+                        document.getElementById("tampon").src = document.getElementsByClassName("tile")[0].src;
+                        document.getElementById("cp").style.visibility = "visible";
+                        document.getElementById("tampon").style.visibility = "visible";
+                        document.getElementById("load").style.visibility = "visible";
+                        document.getElementById("grid").style.visibility = "visible";
+                        canvas.onmousedown = (e)=>{
+                            e.preventDefault();
+                            I_can_draw = true;
+                            const req = {x: parseInt(e.layerX/32), y: parseInt(e.layerY/32)};
+                            if (e.button === 0) { // left click
+                                map[req.y][req.x] = tampon;
+                            } else if (e.button === 2) { // right click
+                                const pattern = map[req.y][req.x];
+                                    for (let i = 0; i < map.length; i++) {
+                                        for (let a = 0; a < map[i].length; a++) {
+                                            if (map[i][a] === pattern) {
+                                                map[i][a] = tampon;
+                                            }
+                                        }
+                                    }
+                            } else if (e.button === 1) { // wheel button
+                                const pattern = map[req.y][req.x];
+                                    function paintSame(x,y,pattern) {
+                                        if (x > 0) {
+                                            let lx = x;
+                                            let ly = y;
+                                            if (pattern === map[ly][lx-1]) {
+                                                lx--;
+                                                map[ly][lx] = tampon;
+                                                paintSame(lx,ly, pattern);
+                                            }
+                                        }
+                                        if (x < map[y].length - 1) {
+                                            let lx = x;
+                                            let ly = y;
+                                            if (pattern === map[ly][lx+1]) {
+                                                lx++;
+                                                map[ly][lx] = tampon;
+                                                paintSame(lx,ly, pattern);
+                                            }
+                                        }
+                                        if (y > 0) {
+                                            let lx = x;
+                                            let ly = y;
+                                            if (pattern === map[ly-1][lx]) {
+                                                ly--;
+                                                map[ly][lx] = tampon;
+                                                paintSame(lx,ly, pattern);
+                                            }
+                                        }
+                                        if (y < map.length - 1) {
+                                            let lx = x;
+                                            let ly = y;
+                                            if (pattern === map[ly+1][lx]) {
+                                                ly++;
+                                                map[ly][lx] = tampon;
+                                                paintSame(lx,ly, pattern);
+                                            }
+                                        }
+                                        return;
+                                    }
+                                    if (pattern === map[req.y][req.x]) {
+                                        map[req.y][req.x] = tampon;
+                                        paintSame(req.x, req.y, pattern);
+                                    }
+                            }
+                        }
+                        canvas.onmousemove = (e)=>{
+                            if (I_can_draw) {
+                                const req = {x: parseInt(e.layerX/32), y: parseInt(e.layerY/32)};
+                                map[req.y][req.x] = tampon;
+                            }
+                        }
+                        document.body.onmouseup = ()=>{
+                            I_can_draw = false;
+                        }
+                    }
+                },50);
+            }
+            document.oncontextmenu = ()=> {return false;};
+            const copyToClipboard = str => {
+                const el = document.createElement('textarea');
+                el.value = str;
+                el.setAttribute('readonly', '');
+                el.style.position = 'absolute';
+                el.style.left = '-9999px';
+                document.body.appendChild(el);
+                el.select();
+                document.execCommand('copy');
+                document.body.removeChild(el);
+            };
+            function copy() {
+                const newArr = [];
+                for (let i = 0; i < map.length; i++) {
+                    newArr.push([]);
+                    for (let a = 0; a < map[i].length; a++) {
+                        newArr[i].push(map[i]);
+                        newArr[i][a] = map[i][a] + 1;
+                    }
+                }
+                let str = JSON.stringify(newArr);
+                str = str.replace(/\[/g, "{");
+                str = str.replace(/\]/g, "}");
+                str = str.replace(/\,\{/g, ",\n{");
+                str = str.replace(/\{\{/g, "{\n{");
+                str = str.replace(/\}\}/g, "}\n}");
+                str = str.replace(/\{(?=\d)/g, "        {");
+                str = str.replace(/\{(?=\d\D)/g, "{ ");
+                str = str.replace(/,(?=\d\D)/g, ", ");
+                copyToClipboard(str);
+            }
+            function load() {
+                let rawmap = prompt("copy paste map");
+                rawmap = rawmap.replace(/\{/g, "[");
+                rawmap = rawmap.replace(/\}/g, "]");
+                let jsonMap = "";
+                try {
+                    jsonMap = JSON.parse(rawmap);
+                }
+                catch(err) {
+                    console.error(err);
+                    return;
+                }
+                for (let i = 0; i < map.length; i++) {
+                    for (let a = 0; a < map[i].length; a++) {
+                        map[i][a] = jsonMap[i][a] - 1;
+                    }
+                }
+            }
+            
+            function grid() {
+                GRID.n ++;
+                if (GRID.n %2 === 1) {
+                    GRID.b = false;
+                    document.getElementById("grid").style.textDecoration = "line-through";
+                } else {
+                    GRID.b = true;
+                    document.getElementById("grid").style.textDecoration = "none";
+                }
+            }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,580 @@
+<!doctype html>
+<html lang="fr">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width"/>
+    <title>Renouv.art</title>
+    <link rel="icon" href="/img/logo.png" />
+    <script src="/socket.io/socket.io.js"></script>
+    <link rel="stylesheet" type="text/css" href="/css/main.css">
+	<style type="text/css">
+		#boite {
+			cursor: pointer;
+		}
+		h1 {
+			text-align: center;
+			margin: auto;
+			font-size: 60px;
+			background-color: rgba(254, 159, 109, 0.3);
+			z-index: 4;
+		}
+		header {
+			background-color: #FE9F6D;
+			display: flex;
+			font-family: "Roboto-Bold";
+			position: fixed;
+			width: 100%; 
+			z-index: 5;
+			visibility: hidden;
+		}
+	</style>
+
+	<style type="text/css">
+			#main {
+				display: flex;
+				width: 100%;
+			}
+		    @media only screen and (min-width: 600px) {
+				
+			    
+			}
+			@media only screen and (max-width: 600px) {
+			    #main {
+					flex-direction: column-reverse;
+				}
+				#mainText {
+					padding: 20px;
+				}
+			}
+			hr {
+				border-color: black;
+			}
+			#content {
+				margin: auto;
+				flex-grow: 3;
+				display: flex;
+				flex-direction: column;
+			}
+			#mainText {
+				margin: auto;
+				padding-left: 10px;
+			}
+			.jarrive {
+				display: none;
+			}
+			#descr {
+				text-align: center;
+				font-style: italic;
+			}
+
+            .grid {
+                display: grid;
+                grid-template-rows: 
+                    repeat(8, 180px);
+                grid-template-columns: 
+                    repeat(3, 1fr);
+                grid-gap: 5px;
+            }
+
+            .item:nth-child(1) {
+            grid-row: 1 / 4;
+            }
+
+            .item:nth-child(2) {
+            grid-column: 2 / 4;
+            grid-row: 1 / 3;
+            }
+
+            .item:nth-child(3) {
+                grid-column: 2 / 3;
+                grid-row: 3 / 4;
+            }
+
+            .item:nth-child(4) {
+                grid-column: 3 / 4;
+                grid-row: 3 / 5;
+            }
+
+            .item:nth-child(5) {
+            grid-column: 1 / 3;
+            grid-row: 4 / 5;
+            }
+
+            .item:nth-child(6) {
+                grid-column: 1 / 2;
+                grid-row: 5 / 7;
+            }
+
+            .item:nth-child(7) {
+                grid-column: 2 / 4;
+                grid-row: 5 / 6;
+            }
+
+            .item:nth-child(8) {
+            grid-column: 2 / 3;
+            grid-row: 6 / 7;
+            }
+
+            .item:nth-child(9) {
+                grid-column: 1 / 3;
+                grid-row: 7 / 9;
+            }
+
+            .item:nth-child(10) {
+                grid-column: 3 / 4;
+                grid-row: 6 / 9;
+            }
+
+            /* styling code */
+
+            .grid {
+                margin:20px auto;
+                max-width:1000px;
+            }
+
+            .grid > .item {
+                background-position: center;
+                background-repeat: no-repeat;
+                background-size: cover;
+                cursor: pointer;
+                transition: all 1s;
+                /* filter: grayscale(100%);
+                -webkit-filter: grayscale(100%); */
+            }
+            .grid > .item:hover {
+                -webkit-box-shadow:0px 0px 100px 10px #312c2c ;
+                -moz-box-shadow:0px 0px 50px 10px #312c2c ;
+                box-shadow:0px 0px 50px 10px #312c2c ;
+                /* filter: grayscale(0%);
+                -webkit-filter: grayscale(0%); */
+            }
+
+            .chPge {
+                text-align: center;
+                margin: auto;
+                background-color: #7a777780;
+                border: 1px solid #000;
+                padding: 20px;
+                border-radius: 50px 50px 0px 0px;
+                -moz-border-radius: 50px 50px 0px 0px;
+                -webkit-border-radius: 50px 50px 0px 0px;
+                transition: all 1s;
+                cursor: pointer;
+            }
+            .chPge:hover {
+                border-radius: 0px;
+                -moz-border-radius: 0px;
+                -webkit-border-radius: 0px;
+            }
+
+            #descr {
+				font-style: italic;
+			}
+	</style>
+</head>
+	<header >
+		<h1 id="top"><img src="/img/search.png" id="srcImg" width="50" height="50" style="margin-top: 5px; margin-bottom: 5px; position: relative; top: 20px;">
+			<input style="height: 30px; font-family:'Roboto-Thin'; margin-top: 5px; margin-bottom: 5px; padding:10px; font-size:20px; border-width:4px; border-bottom-color: #BCC4CA; border-right-color: #BCC4CA; border-left-color: white;border-top-color: white; border-radius: 10px;" size="20" type="text" placeholder="Recherche sur Renouv.art" ></h1>
+	</header>
+	<p style="display: none;">L'art pour les lycéens, par les lycéens.</p>
+ <div id="js-user" style="position: absolute; top: 100px;">Salut, si tu veux utiliser ce site web, il faudra activer javascript sinon cette page ne pourra pas fonctionner correctement. Si tu ne sais pas comment faire, et bien de manière générale, si tu es sur un ordinateur je te conseille d'utiliser google chrome ou firefox comme navigateur et si tu es sur mobile, je te conseille de n'aller sur ce site qu'a partir d'un ordinateur !</div>
+	<body>
+		<a id="logo" href="/" style="position: fixed; top: 0px; left: 0px; z-index: 6;"><img src="/img/logo.png" width="80" height="80"></a>
+        <a id="post" href="/post">Poster du contenu</a>
+        <canvas id="canvas" style="z-index: 1; visibility: hidden; position: absolute; top: 0px; left: 0px; background-color: rgba(254, 159, 109, 0.3)" onclick="loadImg(imgAsked)"></canvas>
+        <div id="etiquette" style="text-align: center; visibility: hidden; position: absolute; left: 0px; top: 0px;">
+            <h2 id="titreOeuvre"></h2>
+            <p id="descr"></p>
+            <h3 id="signature"></h3>
+            <div style="display: flex;">
+                <div style="margin: auto;">
+                    <h2 id="likes" style="text-decoration: italic; display: inline;"></h2>
+                    <img src="/img/keur.png" id="keur">
+                </div>
+            </div>
+            <br>
+            <div id="comments" style="margin: 30px; visibility: hidden;">
+                <h3>Laisser un commentaire :</h3>
+                <div id="comzone">
+                    
+                </div>
+                <input style="height: 30px; font-family:'Roboto-Thin'; margin-top: 5px; margin-bottom: 5px; padding:10px; font-size:20px; border-width:4px; border-bottom-color: #BCC4CA; border-right-color: #BCC4CA; border-left-color: white;border-top-color: white; border-radius: 10px;"
+                    size="20" type="text" placeholder="Dire quelque chose" onsubmit="sendText()" id="chatUserInput">
+                    <div class="pick" onclick="sendText()" style="color: #341809; display: inline; padding: 5px; border: solid; border-width: 1px; ">
+                    Envoyer
+                </div>
+            </div>
+            <div class="invisible" id="cominv1"></div>
+            <div class="invisible" id="cominv2"></div>
+            <br>
+            <br>
+            <p class="chPge" onclick="backToGrid()" >Retour</p>
+        </div>
+        
+        <article id="main">
+
+                <div id="contPhoto" style="position: absolute; left: 5px; width: 100%;">
+                    <div class="grid" id="mainGrid">
+                        
+                        <!--<div class="item" style="background-image: url(https://images.unsplash.com/photo-1466853817435-05b43fe45b39?dpr=1&auto=compress,format&fit=crop&w=1199&h=871&q=80&cs=tinysrgb&crop=)"></div>
+                            -->
+                    </div>
+                    <br>
+                    <br>
+                    <br>
+                    <br>
+                    
+                    <div id="bas">
+                        <p onclick="changePageID(-10)" class="chPge" style="position: fixed; left: 0px; bottom: 0px;">Page<br>précedente</p>
+                        <p onclick="changePageID(10)" class="chPge" style="position: fixed; right: 0px; bottom: 0px;">Page<br>suivante</p>
+                    </div>
+                </div>
+		</article>
+
+		<!-- 
+			COLOR SCHEME :
+			#FFE8DC
+			#FE9F6D
+			#FC600A
+			#9D3802
+			#341809
+		-->
+
+
+		<!-- SCRIPTS START  -->
+	<script type="text/javascript" src="/system.js"></script>
+	<script type="text/javascript">
+		setInterval(()=>{
+			document.getElementById("main").style.width = document.getElementsByTagName("html")[0].offsetWidth-10+"px";
+			let offset = document.getElementsByTagName("header")[0].offsetHeight;
+            document.getElementById("contPhoto").style.top = offset-100+"px";
+            document.getElementById("canvas").style.top = offset+"px";
+            const nav = document.getElementsByClassName("chPge");
+            for (let i = 0; i < nav.length; i ++) {
+                nav[i].style.maxWidth = ((document.getElementsByTagName("html")[0].offsetWidth-10)/2) +"px";
+            }
+		}, 50);
+
+		let dernierePos = 0;
+		let ticking = false;
+
+		window.addEventListener("scroll",  (e)=>{
+		    dernierePos = window.scrollY;
+		    if (!ticking) {
+		        window.requestAnimationFrame(()=>{
+					if (system === "pc") {
+						// document.getElementById("contPhoto").style.top = dernierePos+"px";
+					}
+		            ticking = false;
+		            if (window.innerWidth < 692) {
+		              let alpha = 1;
+		              alpha = (1/(dernierePos/90 - 0.2))-0.1;
+		              if (! (alpha < 1 && alpha > 0) ) {
+		                if (dernierePos < 50) {
+		                  alpha = 1;
+		                }
+		              }
+		              const connectEl = document.getElementById("post");
+		              connectEl.style.backgroundColor = "RGBa(52,24,9,"+alpha+")";
+		              connectEl.style.color = "RGBa(254, 159, 109,"+alpha+")";
+		            }
+		        });
+		    }
+		    ticking = true;
+        });
+        let pageID = 0;
+        let imgAsked = {
+            src: "",
+            auteur: "",
+            titre : ""
+        };
+		
+        socket.emit("getImg", "dessin", pageID);
+        
+        function changePageID(num) {
+            pageID += num;
+            if (pageID < 0) {
+                pageID = 0;
+            }
+            socket.emit("getImg", "dessin", pageID);
+            let scrollInterv = setInterval(()=>{
+                if (scrollY > 1) {
+                    scrollTo(0, scrollY-35);
+                } else {
+                    clearInterval(scrollInterv);
+                }
+            },5);
+        }
+        let stopWait = true;
+		if (/\!oeuvre\=/.test(location.pathname)) {
+			let req = decodeURIComponent(location.pathname).split("!oeuvre=");
+			req.shift();
+			req = req.join("");
+			let reqarr = req.split("&&&");
+			if (reqarr.length === 2) {
+                imgAsked.auteur = reqarr[0];
+                imgAsked.titre = reqarr[1];
+                imgAsked.src = "/genImg/"+speChar(reqarr[0])+"_"+speChar(reqarr[1])+".png";
+                stopWait = false;
+				socket.emit("getContent", {
+                    titre: reqarr[1],
+					auteur: reqarr[0]
+                });
+                socket.emit("getComments", {
+					titre: reqarr[1],
+					auteur: reqarr[0]
+				});
+                loadImg(imgAsked);
+			}
+        }
+        
+        socket.on("getdessin", arr=>{
+            if (arr.length !== 0) {
+                document.getElementById("mainGrid").innerHTML = "";
+            } else {
+                pageID -= 10;
+            }
+			for (let i = 0; i < arr.length; i++) {
+				if (arr[i].visible) {
+					const p = document.createElement("div");
+                    p.className = "item";
+                    p.style.backgroundImage = "URL("+encodeURI("/genImg/mini"+speChar(arr[i].auteur)+"_"+speChar(arr[i].titre)+".png")+")";
+                    p.title = arr[i].auteur + " - " + arr[i].titre;
+					const autreP = document.createElement("p");
+					autreP.className = "jarrive";
+					autreP.innerHTML =  encodeURIComponent(arr[i].auteur) + "%%*!" + encodeURIComponent(arr[i].titre);
+					p.addEventListener("click", e=>{
+						let queryStr = e.srcElement.getElementsByClassName("jarrive")[0].innerHTML;
+						if (/\%\%\*\!/.test(queryStr)) {
+							const auteur = decodeURIComponent(queryStr.split("%%*!")[0]);
+                            const titre = decodeURIComponent(queryStr.split("%%*!")[1]);
+                            actualFocus.psd = auteur;
+							actualFocus.title = titre;
+                            imgAsked = {
+                                src: "/genImg/"+auteur+"_"+titre+".png",
+                                auteur: auteur,
+                                titre: titre
+                            };
+                            loadImg(imgAsked);
+						}
+                    });
+					p.addEventListener("mousedown", e=>{
+						if (e.buttons === 2 && e.altKey) {
+							let queryStr = e.srcElement.getElementsByClassName("jarrive")[0].innerHTML;
+							if (/\%\%\*\!/.test(queryStr)) {
+								const auteur = decodeURIComponent(queryStr.split("%%*!")[0]);
+							    const titre = decodeURIComponent(queryStr.split("%%*!")[1]);
+								if (supprimer) {
+									if (confirm("Êtes vous sûr de vouloir supprimer : "+auteur+ " - "+titre+" ?")) {
+										socket.emit("deleteContent", {
+											titre: titre,
+											auteur: auteur
+										});
+									}
+								} else {
+									if (confirm("Êtes vous sûr de vouloir censurer : "+auteur+ " - "+titre+" ?")) {
+										socket.emit("hideContent", {
+											titre: titre,
+											auteur: auteur
+										});
+									}
+								}								
+							}
+						}
+					});
+					p.addEventListener("contextmenu", e=>{
+						e.preventDefault();
+						if (event.stopPropagation) {
+							event.stopPropagation();
+						}
+						event.cancelBubble = true;
+						return false;
+					});
+
+					p.appendChild(autreP);
+					document.getElementById("mainGrid").appendChild(p);
+				}
+			}
+		});
+
+        window.addEventListener("resize", function() {
+            if (system !== "mobile") {
+                loadImg(imgAsked);
+            }
+        }, false);
+
+        function resize_image(img, maxSize) {
+            const canvas = document.getElementById('canvas');
+            const ctx = canvas.getContext("2d");
+            // On fixe les dimensions maximales que l'on souhaite pour notre image en sortie
+            const MAX_WIDTH = maxSize[0];
+            const MAX_HEIGHT = maxSize[1];
+            // On récupère les dimensions actuelles de notre image
+            let width = img.width;
+            let height = img.height;
+            // On effectue divers calculs pour obtenir les dimensions de sortie
+            // tout en conservant le ratio largeur/hauteur de notre image
+            if (width > MAX_WIDTH) {
+                height *= MAX_WIDTH / width;
+                width = MAX_WIDTH;
+            }
+            // if (height > MAX_HEIGHT) {
+            //     width *= MAX_HEIGHT / height;
+            //     height = MAX_HEIGHT;
+            // }
+            canvas.width = document.getElementsByTagName("html")[0].offsetWidth;
+            canvas.height = height;
+            let decalX = (document.getElementsByTagName("html")[0].offsetWidth/2) - (width/2);
+            ctx.drawImage(img, decalX, 0, width, height);
+        }
+
+        function loadImg(req) {
+            if (req.src !== "") {
+                wait(true);
+                document.getElementById("comzone").innerHTML = "";
+                socket.emit("getContent", {
+                    titre: req.titre,
+                    auteur: req.auteur
+                });
+                socket.emit("getComments", {
+					titre: req.titre,
+                    auteur: req.auteur
+                });
+                document.getElementById("cominv1").innerHTML = req.auteur;
+                document.getElementById("cominv2").innerHTML = req.titre;
+                
+                document.getElementById("main").style.visibility = "hidden";
+                document.getElementsByClassName("grid")[0].style.visibility = "hidden";
+                document.getElementsByClassName("grid")[0].style.gridTemplateRows = "repeat(8, 80px)";
+                if (system === "mobile") {
+                    document.getElementsByClassName("grid")[0].style.gridTemplateRows = "repeat(8, 0px)";
+                }
+                let img = document.createElement("img");
+                img.src = speChar(encodeURI(req.src));
+                img.onerror = ()=>{
+                    location.replace(location.href.split("!").shift());
+                }
+                img.onload = ()=>{
+                    document.getElementById("canvas").style.visibility = "visible";
+                    document.getElementById("etiquette").style.visibility = "visible";
+                    let offset = document.getElementsByTagName("header")[0].offsetHeight;
+                    resize_image(img, [document.getElementsByTagName("html")[0].offsetWidth, window.innerHeight-offset]);
+                    setTimeout(()=>{
+                        document.getElementById("etiquette").style.top = document.getElementById("canvas").height + document.getElementsByTagName("header")[0].offsetHeight+"px";
+                        document.getElementById("etiquette").style.left = ((window.innerWidth/2) - (document.getElementById("etiquette").offsetWidth/2)) +"px";
+                        document.getElementById("comments").style.visibility = "visible";
+                        wait(false); 
+                    },10);
+                }
+            }
+        }
+
+        socket.on("getContent", obj=>{
+			if (obj.type === "dessin") {
+				let descr = obj.description;
+				if (descr !== "") {
+					descr = '\"'+descr+'\"';
+				}
+
+				document.getElementById("titreOeuvre").innerHTML = "";
+				document.getElementById("descr").innerHTML = "";
+				document.getElementById("signature").innerHTML = "";
+
+				document.getElementById("titreOeuvre").appendChild(document.createTextNode(obj.titre));
+                // document.getElementById("descr").appendChild(document.createTextNode(descr));
+                for (let i = 0; i < descr.split("\n").length; i++) {
+					let np = document.createElement("p");
+					np.style.display = "inline";
+					np.appendChild(document.createTextNode(descr.split("\n")[i]));
+					document.getElementById("descr").appendChild(np);
+					document.getElementById("descr").appendChild(document.createElement("br"));
+				}
+				document.getElementById("signature").appendChild(document.createTextNode(obj.auteur));
+                actualFocus.psd = obj.auteur;
+				actualFocus.title = obj.titre;
+                socket.emit("getLikes", obj.auteur, obj.titre);
+                
+				let scrollInterv = setInterval(()=>{
+					if (scrollY > 1) {
+						scrollTo(0, scrollY-35);
+					} else {
+						clearInterval(scrollInterv);
+					}
+				},20);
+			}
+        });
+        
+        function backToGrid() {
+            imgAsked = {
+                src: "",
+                auteur: "",
+                titre: ""
+            };
+            document.getElementsByClassName("grid")[0].style.gridTemplateRows = "repeat(8, 180px)";
+            document.getElementsByClassName("grid")[0].style.visibility = "visible";
+            document.getElementById("etiquette").style.visibility = "hidden";
+            document.getElementById("canvas").style.visibility = "hidden";
+            document.getElementById("main").style.visibility = "visible";
+            document.getElementById("comments").style.visibility = "hidden";
+            let scrollInterv = setInterval(()=>{
+                if (scrollY > 1) {
+                    scrollTo(0, scrollY-35);
+                } else {
+                    clearInterval(scrollInterv);
+                }
+            },20);
+        }
+
+        socket.on("getComments", arr=>{
+			if (arr.length !== 0) {
+				for (let i = 0; i < arr.length; i++) {
+					let para = document.createElement("p");
+					let text = document.createTextNode(arr[i].auteur+" : "+arr[i].txt);
+					para.appendChild(text);
+					document.getElementById("comzone").appendChild(para);
+				}
+			}
+			document.getElementById("comments").style.visibility = "visible";
+		});
+
+		function sendText() {
+			const auteur = document.getElementById("cominv1").innerHTML;
+			const titre = document.getElementById("cominv2").innerHTML;
+			const text = document.getElementById("chatUserInput").value;
+			if (text !== "" && titre !== "" && auteur !== "") {
+				socket.emit("newCom", {auteur: auteur, titre: titre}, text);
+			}
+			document.getElementById("chatUserInput").value = "";
+		}
+		
+		document.getElementById("chatUserInput").addEventListener("keydown", e=>{
+			if (e.keyCode === 13) {
+				sendText();
+			}
+		});
+
+		socket.on("refreshCom", (titre)=>{
+			if (document.getElementById("cominv2").innerHTML === titre) {
+				document.getElementById("comzone").innerHTML = "";
+				if (document.getElementById("cominv1").innerHTML !== "" && document.getElementById("cominv2").innerHTML !== "") {
+					socket.emit("getComments", {
+						titre: document.getElementById("cominv2").innerHTML,
+						auteur: document.getElementById("cominv1").innerHTML
+					});
+				}
+			}
+		});
+
+	</script>
+	<script>
+        if (stopWait) {
+            loadEnd(stopWait);
+        } else {
+            document.getElementById("post").style.visibility = "visible";
+            document.getElementsByTagName("header")[0].style.visibility = "visible";
+        }
+	</script>
+</body>
+
+</html>

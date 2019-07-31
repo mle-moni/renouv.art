@@ -1,0 +1,207 @@
+<!-- NE JAMAIS OUBLIER QUE 
+
+    delete({}[[[[[{x:1}]]]]]) === true
+    
+-->
+<!doctype html>
+<html lang="fr">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width"/>
+    <title>Renouv.art</title>
+    <link rel="icon" href="img/logo.png" />
+    <script src="/socket.io/socket.io.js"></script>
+    <link rel="stylesheet" type="text/css" href="/css/main.css">
+	<style type="text/css">
+		#canvas {
+			margin: auto;
+			background-color: rgba(0,0,0,0.1);
+		}
+		#main {
+			display: flex;
+		}
+	</style>
+</head>
+	<p style="display: none;">L'art pour les lycéens, par les lycéens.</p>
+ <div id="js-user" style="position: absolute; top: 100px;">Salut, si tu veux utiliser ce site web, il faudra activer javascript sinon cette page ne pourra pas fonctionner correctement. Si tu ne sais pas comment faire, et bien de manière générale, si tu es sur un ordinateur je te conseille d'utiliser google chrome ou firefox comme navigateur et si tu es sur mobile, je te conseille de n'aller sur ce site qu'a partir d'un ordinateur !</div>
+	<body>
+		<a id="logo" href="/" style="position: fixed; top: 0px; left: 0px; z-index: 6;"><img src="/img/logo.png" width="80" height="80"></a>
+		<article id="main">
+			<canvas id="canvas" width="640" height="320"></canvas>
+		</article>
+		<span id="keur" style="display: none;"></span>
+		<span id="post" style="display: none;"></span>
+		<header id="keur" style="display: none;"></header>
+		<h1 id="keur" style="display: none;"> </h1>
+		<span id="top" style="display: none;"><input></span>
+		<!-- 
+			COLOR SCHEME :
+			#FFE8DC
+			#FE9F6D
+			#FC600A
+			#9D3802
+			#341809
+		-->
+
+
+		<!-- SCRIPTS START  -->
+	<script type="text/javascript" src="/system.js"></script>
+	<script type="text/javascript">
+		let dernierePos = 0;
+		let ticking = false;
+
+		function resize(scroll_pos) {
+		    const el = document.getElementById("top");
+		    el.style.paddingTop = (50-scroll_pos)+"px";
+		    el.style.paddingBottom = (50-scroll_pos)+"px";
+		    if (70-scroll_pos < 0) {
+		        el.style.paddingTop = 0+"px";
+		        el.style.paddingBottom = 0+"px";
+		    }
+		}
+
+		window.addEventListener("scroll",  (e)=>{
+		    dernierePos = window.scrollY;
+		    if (!ticking) {
+		        window.requestAnimationFrame(()=>{
+		            resize(Math.round(dernierePos/10));
+		            ticking = false;
+		            if (window.innerWidth < 692) {
+		              let alpha =1;
+		              alpha = (1/(dernierePos/90 - 0.2))-0.1;
+		              if (! (alpha < 1 && alpha > 0) ) {
+		                if (dernierePos < 50) {
+		                  alpha = 1;
+		                }
+		              }
+		              const connectEl = document.getElementById("post");
+		              connectEl.style.backgroundColor = "RGBa(52,24,9,"+alpha+")";
+		              connectEl.style.color = "RGBa(254, 159, 109,"+alpha+")";
+		            }
+		        });
+		    }
+		    ticking = true;
+		});
+		
+		document.getElementById("main").style.height = window.innerHeight-5 + "px";
+		document.getElementById("main").style.width = window.innerWidth-5 + "px";
+	</script>
+	<script>
+
+		//40x 20y
+		let map = [];
+		let wolemap = [];
+
+		socket.emit("getSave");
+
+		const canvas = document.getElementById("canvas");
+		const ctx = canvas.getContext("2d");
+		let draw;
+		
+		class Personnage {
+			constructor(x, y) {
+				this.pos = {
+					x: 0,
+					y: 0
+				};
+			}
+			Droite() {
+				if (map[10][20+1] === 1) {
+					this.pos.x++;
+					map = getMapFromCursor(this.pos);
+				}
+			}
+			Gauche() {
+				if (map[10][20-1] === 1) {
+					this.pos.x--;
+					map = getMapFromCursor(this.pos);
+				}
+			}
+			Haut() {
+				if (map[10-1][20] === 1) {
+					this.pos.y--;
+					map = getMapFromCursor(this.pos);
+				}
+			}
+			Bas() {
+				if (map[10+1][20] === 1) {
+					this.pos.y++;
+					map = getMapFromCursor(this.pos);
+				}
+			}
+		}
+		const Mec = new Personnage(1,1);
+
+		document.addEventListener("keydown", (e)=>{
+			if (e.keyCode === 38) { //haut
+				Mec.Haut();
+			} else if (e.keyCode === 39) { //droite
+				Mec.Droite();
+			} else if (e.keyCode === 40) { //bas
+				Mec.Bas();
+			} else if (e.keyCode === 37) { //gauche
+				Mec.Gauche();
+			}
+
+			if (Mec.pos.x === 117 && Mec.pos.y === 57) {
+				console.log("win")
+				location.replace("https://renouv.art/spi");
+			}
+		});
+		
+		socket.on("getSave", (arr)=>{
+
+			let pre = [];
+			for (let i = 0; i < 3; i++) {
+				for (let j = 0; j < arr[i].map.length; j++) {
+					let tempmap = arr[3*i].map[j].concat( arr[ (3*i)+1 ].map[j] ).concat( arr[ (3*i)+2 ].map[j] );
+					pre.push(tempmap[0].concat(tempmap[1]).concat(tempmap[2]));
+				}
+			}
+			const modele = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
+			const modele2 = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
+			for (let i = 0; i < pre.length; i++) {
+				pre[i] = modele.concat(pre[i]).concat(modele);
+			}
+			wolemap = pre;
+			for (let i = 0; i < 20; i++) {
+				wolemap.unshift(modele2);
+				wolemap.push(modele2);
+			}
+			map = getMapFromCursor(Mec.pos);
+			clearInterval(draw);
+			draw = setInterval(()=>{
+				ctx.clearRect(0,0,canvas.width, canvas.height);
+				for (let i = 0; i < map.length; i++) {
+					for (let j = 0; j < map[i].length; j++) {
+						let color = "rgba(0,0,0,0.1)";
+						if (map[i][j] === 0) {
+							color = "black";
+						}
+						ctx.fillStyle = color;
+						ctx.fillRect(j*16, i*16, 16, 16);
+					}
+				}
+				ctx.fillStyle = "red";
+				ctx.fillRect(20*16, 10*16, 16,16);
+			},50);
+		});
+
+		function getMapFromCursor(pos) {
+			let cur = {
+				x: pos.x + 21,
+				y: pos.y + 11
+			};
+			let firstCut = wolemap.slice(cur.y, cur.y+20);
+			for (let i = 0; i < firstCut.length; i++) {
+				firstCut[i] = firstCut[i].slice(cur.x, cur.x+40);
+			}
+			return firstCut;
+		}
+
+		loadEnd();
+	</script>
+</body>
+
+</html>

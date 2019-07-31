@@ -1,0 +1,292 @@
+<!doctype html>
+<html lang="fr">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width"/>
+    <title>Cahier des charges</title>
+    <style>
+        /* #C36F09
+        
+         */
+         @font-face {
+		font-family: "Roboto-Bold";
+		 	src: url("/font/Roboto-Bold.ttf");
+		}
+		@font-face {
+		font-family: "Roboto-Thin";
+		 	src: url("/font/Roboto-Thin.ttf");
+		}
+		html {
+			display: flex;
+			font-family: "Roboto-Thin";
+            color: #341C09
+		}
+		body {
+			background-color: #FFEBDC;
+			display: flex;
+			flex-direction: column;
+			margin: auto;
+			width: 100%;
+			font-size: 25px;
+		}
+		header {
+			background-color: #FEAB6D;
+			display: flex;
+			font-family: "Roboto-Bold";
+			flex-grow: 2;
+            border: solid;
+            border-color: #341C09;
+            border-width: 1px;
+            position: fixed;
+            width: 100%;
+            z-index: 5;
+		}
+
+
+
+        h1 {
+            margin: auto;
+            text-align: center;
+            display: inline-block;
+            color: #341C09;
+            padding: 70px;
+            border-top-left-radius: 10px;
+            border-bottom-right-radius: 10px;
+            font-size: 2em;
+        }
+        h2 {
+            font-size: 1.5em;
+            color: #9D4502;
+        }
+        h3 {
+            font-size: 1.2em;
+        }
+        h4 {
+            font-size: 1.5em;
+        }
+        h5 {
+            font-size: 1.2em;
+        }
+        a {
+            color: black;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        a:visited {
+            color: inherit;
+            text-decoration: none;
+        }
+        .cont {
+            display: flex;
+            flex-direction: column;
+        }
+        span {
+            color: #FFEBDC;
+            user-select: none;
+        }
+        .indent1 {
+            position: relative;
+            left: 40px;
+        }
+        footer {
+            position: fixed;
+            bottom: 10px;
+        }
+        #goTop {
+            background-color: #341C09;
+            color: #FEAB6D;
+            position: fixed;
+            left: 0px;
+            bottom: 0px;
+            padding: 10px;
+            border-top-right-radius: 20px;
+            text-align: center;
+            padding-top: 12px;
+            padding-left: 80px;
+        }
+        #mainContent {
+            margin-left: 15%;
+            margin-right: 15%;
+            position: absolute;
+            top: 200px;
+        }
+    </style>
+</head>
+
+<div id="toper"></div>
+<header>
+    <h1 id="top">Cahier des charges du <i style="color: #9D4502">Drone Marin</i> :</h1>
+</header>
+
+<body>
+    
+    <article id="mainContent">
+    <div id="contLien">
+            <h2>
+                <a href="#carac">CARACTERISTIQUES :</a>
+            </h2>
+        <div class="cont">
+            <a href="#autonomie">-Autonomie</a>
+            <a href="#etanche">-Etanchéité</a>
+            <a href="#bouee">-Bouée</a>
+            <a href="#composants">-Composants</a>
+        </div>
+        <br>
+        <h2>
+            <a href="#appli">COMMANDE VIA APPLICATION SMARTPHONE :</a>
+        </h2>
+        <h3>
+            <a href="#manuel">Pilotage manuel avec les commandes :</a>
+        </h3>
+        <div class="cont">
+            <a href="#avancer">-avancer</a>
+            <a href="#droite">-droite</a>
+            <a href="#gauche">-gauche</a>
+        </div>
+        <h3>
+            <a href="#auto">Pilotage automatique apres avoir donné une position GPS :</a>
+        </h3>
+        <div class="cont">
+            <a href="#allerGPS">-aller jusqu'à un point GPS puis prise des mesures</a>
+            <a href="#retourGPS">-retour au point de départ après mesures</a>
+        </div>
+    </div>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <article>
+        <h4 id="carac">CARACTERISTIQUES :</h4>
+        <h5 id="autonomie">Autonomie</h5>
+            L'autonomie de la batterie sera de 1 à 2 heures, pour pouvoir remplir plusieurs missions avec une seule charge de batterie.<br>
+            Il y aura aussi des panneaux solaires pour couvrir une éventuelle panne de batterie.<br>
+            En cas de batterie faible en dessous de 20% le bateau doit s'arreter pour faire une recharge à l'aide des panneaux solaires.<br>
+            Le bateau ne pourra repartir qu'avec des batteries chargées à plus de 80%
+
+        <h5 id="etanche">Etanchéité</h5>
+            Le drone devra être étanche jusqu'à 1 mètre de profondeur, pour pouvoir être submergé par des vagues sans risques.
+        
+        <h5 id="bouee">Bouée</h5>
+        Le drone aura un système d'attache pour tirer un bouée. <br>
+        Ce système d'attache devra permettre l'échange d'énergie et d'informations avec la bouée.
+
+        <h5 id="composants">Composants :</h5>
+            <p id="moteurs">- 2 moteurs
+                <p><span>indent</span>-Moteur à courant continu</p>
+                <p><span>indent</span>-Tension nominale : 7.2V</p>
+                <p><span>indent</span>-Courant nominal 3.5  A</p>
+                <p><span>indent</span>-Régime nominal : 13 600 tr/min</p>
+                <p><span>indent</span>-Puissance nominale : 16 W</p>
+                <p><span>indent</span>-Dimensions : 37.8 * 29.1 * 29.1 mm</p>
+                <p><span>indent</span>-Diamètre de l'arbre : 2.3 mm</p>
+            </p>
+            
+            <p id="turbine">- 2 turbines
+                <p><span>indent</span>-Valeur de poussée statique : 200W - 400W / 13 000 -  16 000 tr/min</p>
+                <p><span>indent</span>-Dimensions : 130 * 38 * 45 mm </p>
+                <p><span>indent</span>-Longueur du tunnel : 130 mm </p>
+                <p><span>indent</span>-Largeur du tunnel : 37 mm </p>
+                <p><span>indent</span>-Diamètre de l'arbre : 4 mm  </p>
+            </p>
+
+            <p id="bat">- 3 Batteries :
+                <p><span>indent</span>-Dimensions : 135 * 48 * 25 mm</p>
+                <p><span>indent</span>-Tension 7.2 V </p>
+                <p><span>indent</span>-Autonomie : 4000 mAh</p>
+                <p><span>indent</span>-Technologie : Ni-MH</p>
+            </p>
+
+            <p id="gauche">- 2 panneaux solaires
+                <p><span>indent</span>-Dimensions : 270 * 270 * 45 mm</p>
+                <p><span>indent</span>-Tension nominale : 12 V </p>
+                <p><span>indent</span>-Courant nominal : 300 mA </p>
+                <p><span>indent</span>-Catégorie : module solaire polycristallin </p>
+                <p><span>indent</span>-Poids : 900 g </p>
+            </p>
+
+        <h4 id="appli">COMMANDES :</h4>
+        <h5 id="manuel">Pilotage manuel :</h5>
+            <p id="avancer">-avancer
+                <p><span>indent</span>Cette fonction enclenchera les 2 turbines.</p>
+            </p>
+
+            <p id="droite">-droite
+                <p><span>indent</span>Cette fonction désactivera temporairement la turbine droite.</p>
+            </p>
+
+            <p id="gauche">-gauche
+                <p><span>indent</span>Cette fonction désactivera temporairement la turbine gauche.</p>
+            </p>
+        <h5 id="auto">Pilotage automatique :</h5>
+        <p id="allerGPS">-aller jusqu'au point GPS + mesures
+            <p class="indent1">-Après avoir enclenché le mode automatique via l'application,
+                 le drone effectue une mesure GPS pour savoir quelle est sa position de départ.<br>
+                 -Ensuite, l'utilisateur choisit une destination de mission en pointant une position GPS ou en la rentrant manuellement grâce à l'API google map.<br>
+                 -Le drone ira jusqu'à cette destination et prendra des mesures : salinité, température...
+            </p>
+        </p>
+
+        <p id="retourGPS">-retour au point de départ
+            <p class="indent1">
+                -Une fois les mesures effectuées, le drone retournera à sa position de départ.<br>
+                -En cas de batterie vide, le drone attendra de se recharger grâce aux panneaux solaires et retournera au point de départ.
+            </p>
+        </p>
+    </article>
+</article>
+<footer><a onmouseover="expend()" onmouseout="shrink()" id="goTop" href="#toper"></a></footer>
+</body>
+<script>
+    function expend() {
+        const el = document.getElementById("goTop");
+        el.innerHTML = "RETOUR EN HAUT";
+        el.style.paddingRight = "80px";
+    }
+    function shrink() {
+        const el = document.getElementById("goTop");
+        el.innerHTML = "";
+        el.style.paddingRight = "0px";
+    }
+
+    let dernierePos = 0;
+    let ticking = false;
+
+    function resize(scroll_pos) {
+        const el = document.getElementById("top");
+        el.style.padding = (70-scroll_pos)+"px";
+        if (70-scroll_pos < 0) {
+            el.style.padding = 0+"px";
+        }
+    }
+
+    window.addEventListener("scroll",  (e)=>{
+        dernierePos = window.scrollY;
+        if (!ticking) {
+            window.requestAnimationFrame(()=>{
+                resize(Math.round(dernierePos/10));
+                ticking = false;
+            });
+            if (window.innerWidth < 970) {
+                document.getElementById("mainContent").style.top = 250+"px";
+            } 
+            if (window.innerWidth < 585) {
+                document.getElementById("mainContent").style.top = 350+"px";
+            }
+        }
+        ticking = true;
+    });
+    window.onload = function() {
+        if (window.innerWidth < 970) {
+            document.getElementById("mainContent").style.top = 250+"px";
+        } 
+        if (window.innerWidth < 585) {
+            document.getElementById("mainContent").style.top = 350+"px";
+        }
+    }
+</script>
+
+</html>

@@ -1,0 +1,279 @@
+<!doctype html>
+<html lang="fr">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width"/>
+    <title>Renouv.art</title>
+    <link rel="icon" href="/img/logo.png" />
+    <script src="/socket.io/socket.io.js"></script>
+    <link rel="stylesheet" type="text/css" href="/css/main.css">
+	<style type="text/css">
+		#boite {
+			cursor: pointer;
+		}
+		h1 {
+			text-align: center;
+			margin: auto;
+			font-size: 60px;
+			background-color: rgba(254, 159, 109, 0.3);
+			z-index: 4;
+		}
+		header {
+			background-color: #FE9F6D;
+			display: flex;
+			font-family: "Roboto-Bold";
+			position: fixed;
+			width: 100%; 
+			z-index: 5;
+			visibility: hidden;
+		}
+	</style>
+
+	<style type="text/css">
+			#main {
+				display: flex;
+				width: 100%;
+			}
+			#picker {
+				border: solid;
+				border-radius:0px 30px 30px 30px;
+				-moz-border-radius:0px 30px 30px 30px;
+				-webkit-border-radius:0px 30px 30px 30px;
+				padding: 10px;
+				background-color: rgb(90, 81, 77);
+				overflow-y: scroll;
+			}
+			#picker::-webkit-scrollbar-track {
+				border: 1px solid #000;
+				padding: 2px 0;
+				background-color: #404040;
+				opacity: 0.5;
+				visibility: hidden;
+			}
+			#picker::-webkit-scrollbar {
+				width: 10px;
+			}
+			#picker::-webkit-scrollbar-thumb {
+				border-radius:0px 50px 50px 0px;
+				-moz-border-radius:0px 50px 50px 0px;
+				-webkit-border-radius:0px 50px 50px 0px;
+				box-shadow: inset 0 0 6px rgba(0,0,0,.3);
+				background-color: #737272;
+				border: 1px solid #000;
+			}
+			.pick {
+				cursor: pointer;
+				transition: all 1s;
+				padding: 10px;
+				border-radius: 50px;
+				color: #fe9f6d;
+				text-align: center;
+				background-color: rgba(255, 232, 220, 0.1);
+		    }
+		    .pick:hover {
+		    	background-color: rgba(255, 232, 220, 0.5);
+				color: RGBa(52,24,9, 1);
+				border-radius: 0px;
+		    }
+		    @media only screen and (min-width: 600px) {
+				#picker {
+					min-width: 250px;
+					max-width: 250px;
+					position: relative;
+					/* Y PENSER */
+				}
+				#c1, #c2 {
+					width: 300px;
+					height: 300px;
+				}
+				#res1, #res2 {
+					width: 300px;
+					font-size: 50px;
+				}
+			    
+			}
+			@media only screen and (max-width: 600px) {
+			    #main {
+					flex-direction: column-reverse;
+				}
+				#picker {
+					margin: auto;
+					width: 100%;
+				}
+				#mainText {
+					padding: 20px;
+				}
+				#c1, #c2 {
+					width: 120px;
+					height: 120px;
+				}
+				#res1, #res2 {
+					width: 120px;
+					font-size: 35px;
+				}
+			}
+			hr {
+				border-color: black;
+			}
+			#content {
+				margin: auto;
+				flex-grow: 3;
+				display: flex;
+				flex-direction: column;
+			}
+			#mainText {
+				margin: auto;
+				padding-left: 10px;
+			}
+			.jarrive {
+				display: none;
+			}
+			#descr {
+				text-align: center;
+				font-style: italic;
+			}
+			#c1, #c2 {
+				margin: auto;
+				cursor: pointer;
+				background-color: RGBa(52,24,9, 0.9);
+				margin: 5px;
+				border-radius:20px;
+				-moz-border-radius:20px;
+				-webkit-border-radius:20px;
+			}
+			#res1, #res2 {
+
+			}
+
+			.colorPick {
+				width: 50px;
+				height: 50px;
+				margin: 5px;
+				border-radius:20px;
+				-moz-border-radius:20px;
+				-webkit-border-radius:20px;
+				cursor: pointer;
+			}
+	</style>
+</head>
+	<header >
+		<h1 id="top"><img src="/img/search.png" id="srcImg" width="50" height="50" style="margin-top: 5px; margin-bottom: 5px; position: relative; top: 20px;">
+			<input style="height: 30px; font-family:'Roboto-Thin'; margin-top: 5px; margin-bottom: 5px; padding:10px; font-size:20px; border-width:4px; border-bottom-color: #BCC4CA; border-right-color: #BCC4CA; border-left-color: white;border-top-color: white; border-radius: 10px;" size="20" type="text" placeholder="Recherche sur Renouv.art" ></h1>
+	</header>
+	<p style="display: none;">L'art pour les lycéens, par les lycéens.</p>
+ <div id="js-user" style="position: absolute; top: 100px;">Salut, si tu veux utiliser ce site web, il faudra activer javascript sinon cette page ne pourra pas fonctionner correctement. Si tu ne sais pas comment faire, et bien de manière générale, si tu es sur un ordinateur je te conseille d'utiliser google chrome ou firefox comme navigateur et si tu es sur mobile, je te conseille de n'aller sur ce site qu'a partir d'un ordinateur !</div>
+	<body>
+		<a id="logo" href="/" style="position: fixed; top: 0px; left: 0px; z-index: 6;"><img src="/img/logo.png" width="80" height="80"></a>
+		<a id="post" href="/post">Poster du contenu</a>
+		<article id="main">
+
+			<div id="content">
+				<p id="descr"></p>
+				<h2 id="titreOeuvre">Vote du logo</h2>
+				<div style="text-align: center;">
+					Comme je l'avais demandé, 2 personnes m'ont fait un logo. Maintenant il faut les départager !<br> (cliquez sur votre logo préféré)<br>
+					La couleur de fond est changeable ^^
+				</div>
+				<br>
+				<div style="display: flex;">
+					<div id="couleurs" style="display: flex; margin: auto;">
+						<div class="colorPick" style="background-color: rgba(0,0,0,0.9);" title="Noir" onclick="chColor('rgba(0,0,0,0.9)')"></div>
+						<div class="colorPick" style="background-color: rgba(52,24,9, 0.9);" title="Marron" onclick="chColor('rgba(52,24,9, 0.9)')"></div>
+						<div class="colorPick" style="background-color: rgba(254, 160, 109, 0.9);" title="Orange" onclick="chColor('rgba(254, 160, 109, 0.9)')"></div>
+						<div class="colorPick" style="background-color: rgba(255,255,255,0.9);" title="Blanc" onclick="chColor('rgba(255,255,255,0.9)')"></div>
+					</div>
+				</div>
+				<br>
+				<div id="mainText" style="display: flex; flex-wrap: wrap;" >
+                    <img src="/img/Renouv_art_logo.png" id="c1" title="choix n°1" onclick="concours('choix1')" >
+                    <img src="/img/logoTouch.png" id="c2" title="choix n°2" onclick="concours('choix2')">
+				</div>
+
+				<div style="display: flex;">
+					<div style="text-align: center; display: flex; margin: auto;">
+						<p id="res1" >50%</p>
+						<p id="res2" >50%</p>
+					</div>
+				</div>
+				<!-- <h3 id="signature" style="text-decoration: italic; text-align: center;">Le gentil développeur</h3> -->
+
+				<span id="keur" style="display: none;"></span>
+			</div>
+		</article>
+
+		<!-- 
+			COLOR SCHEME :
+			#FFE8DC
+			#FE9F6D
+			#FC600A
+			#9D3802
+			#341809
+		-->
+
+
+		<!-- SCRIPTS START  -->
+	<script type="text/javascript" src="/system.js"></script>
+	<script type="text/javascript">
+		setInterval(()=>{
+			document.getElementById("main").style.width = window.innerWidth-30+"px";
+			let offset = document.getElementsByTagName("h1")[0].offsetHeight;
+		}, 50);
+
+		let dernierePos = 0;
+		let ticking = false;
+
+		window.addEventListener("scroll",  (e)=>{
+		    dernierePos = window.scrollY;
+		    if (!ticking) {
+		        window.requestAnimationFrame(()=>{
+		            ticking = false;
+		            if (window.innerWidth < 692) {
+		              let alpha = 1;
+		              alpha = (1/(dernierePos/90 - 0.2))-0.1;
+		              if (! (alpha < 1 && alpha > 0) ) {
+		                if (dernierePos < 50) {
+		                  alpha = 1;
+		                }
+		              }
+		              const connectEl = document.getElementById("post");
+		              connectEl.style.backgroundColor = "RGBa(52,24,9,"+alpha+")";
+		              connectEl.style.color = "RGBa(254, 159, 109,"+alpha+")";
+		            }
+		        });
+		    }
+		    ticking = true;
+		});
+
+		function chColor(color) {
+			document.getElementById("c1").style.backgroundColor = color;
+			document.getElementById("c2").style.backgroundColor = color;
+		}
+
+		function concours(id) {
+			scrollBy(0,300);
+			socket.emit("concours", id);
+		}
+
+		socket.on("concours", ()=>{
+			socket.emit("getConcours");
+		});
+
+		socket.on("resConcours", arr=>{
+			let p1 = (arr[0] / (arr[0] + arr[1])) *100;
+			let p2 = (arr[1] / (arr[0] + arr[1])) *100;
+			if ((arr[0] + arr[1]) === 0) {
+				p1 = 0;
+				p2 = 0;
+			}
+			document.getElementById("res1").innerHTML = Math.round(p1) + "%";
+			document.getElementById("res2").innerHTML = Math.round(p2) + "%";
+		});
+		socket.emit("getConcours");
+	</script>
+	<script>
+		loadEnd();
+	</script>
+</body>
+
+</html>

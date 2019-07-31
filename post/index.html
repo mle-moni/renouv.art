@@ -1,0 +1,820 @@
+<!-- NE JAMAIS OUBLIER QUE 
+
+    delete({}[[[[[{x:1}]]]]]) === true
+
+-->
+<!doctype html>
+<html lang="fr">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width"/>
+    <title>Renouv.art</title>
+    <link rel="icon" href="img/logo.png" />
+    <script src="/socket.io/socket.io.js"></script>
+    <link rel="stylesheet" type="text/css" href="/css/main.css">
+	<style type="text/css">
+		#boite {
+            
+		}
+		h1 {
+			text-align: center;
+			margin: auto;
+			font-size: 60px;
+			background-color: rgba(254, 159, 109, 0.3);
+			z-index: 4;
+		}
+		header {
+			background-color: #FE9F6D;
+			display: flex;
+			font-family: "Roboto-Bold";
+			position: fixed;
+			width: 100%; 
+			z-index: 5;
+			visibility: hidden;
+		}
+
+
+	</style>
+
+	<style type="text/css">
+			#main {
+                display: flex;
+                flex-direction: column;
+                width: 100%;
+            }
+            h2 {
+                margin: auto;
+            }
+            #boite, #postade, .cont-basic {
+                display: flex;
+                flex-direction: column;
+                margin: auto;
+                align-content: center;
+                align-items: center;
+            }
+            span {
+                border: solid;
+                border-radius: 100px;
+                -moz-border-radius: 100px;
+                -webkit-border-radius: 100px;
+                border-width: 2px;
+                width: 18px;
+                display: inline-block;
+                cursor: pointer;
+                text-align: center;
+            }
+            .but {
+                margin: auto;
+            }
+            #create, #confirm {
+                display: none;
+            }
+            #create, #connect, .classic {
+                background-color: #7a777780;
+                border: 1px solid #000;
+                padding: 8px;
+                border-radius: 50px;
+                -moz-border-radius: 50px;
+                -webkit-border-radius: 50px;
+                transition: all 1s;
+                cursor: pointer;
+            }
+            #create:hover, #connect:hover, .classic:hover {
+                border-radius: 0px;
+                -moz-border-radius: 0px;
+                -webkit-border-radius: 0px;
+            }
+            .inputs {
+
+            }
+            #noacc, #alacc {
+                text-align: center;
+            }
+            u {
+                cursor: pointer;
+                text-decoration: underline;
+            }
+            u:hover {
+                font-style: italic;
+            }
+            #post, .infobulle {
+                display: none;
+            }
+            .disabled {
+                display: none;
+            }
+
+            .classic {
+                padding: 15px;
+            }
+
+	</style>
+</head>
+	<header >
+		<h1 id="top"><img src="/img/search.png" id="srcImg" width="50" height="50" style="margin-top: 5px; margin-bottom: 5px; position: relative; top: 20px;">
+            <input style="height: 30px; font-family:'Roboto-Thin'; margin-top: 5px; margin-bottom: 5px; padding:10px; font-size:20px; border-width:4px; border-bottom-color: #BCC4CA; border-right-color: #BCC4CA; border-left-color: white;border-top-color: white; border-radius: 10px;"
+             size="20" type="text" placeholder="Recherche sur Renouv.art" ></h1>
+    </header>
+    <p style="display: none;">L'art pour les lycéens, par les lycéens.</p>
+ <div id="js-user" style="position: absolute; top: 100px;">Salut, si tu veux utiliser ce site web, il faudra activer javascript sinon cette page ne pourra pas fonctionner correctement. Si tu ne sais pas comment faire, et bien de manière générale, si tu es sur un ordinateur je te conseille d'utiliser google chrome ou firefox comme navigateur et si tu es sur mobile, je te conseille de n'aller sur ce site qu'a partir d'un ordinateur !</div>
+	<body>
+    
+		<a id="logo" href="/" style="position: fixed; top: 0px; left: 0px; z-index: 6;"><img src="/img/logo.png" width="80" height="80"></a>
+		<div id="post" style="display: none;">Poster du contenu</div>
+		<article id="main">
+            <br>
+            
+            <form id="boite">
+                <h2>Authentification</h2><br>
+                <div>
+                    <input class="inputs" style="height: 30px; font-family: 'Roboto-Thin'; padding:5px; font-size:16px; border-width:4px; border-bottom-color: #BCC4CA; border-right-color: #BCC4CA; border-left-color: white;border-top-color: white; border-radius: 10px;"
+                     size="20" id="i1" type="text" placeholder="Nom d'utilisateur" title="Entre 1 et 30 charactères." onblur="test('i1')">
+                    <span class="infobulle" id="a1">i</span><br><br>
+                </div>
+                    
+                <div>
+                    <input class="inputs" style="height: 30px; font-family: 'Roboto-Thin'; padding:5px; font-size:16px; border-width:4px; border-bottom-color: #BCC4CA; border-right-color: #BCC4CA; border-left-color: white;border-top-color: white; border-radius: 10px;"
+                     size="20" id="i2" type="password" placeholder="Mot de passe" title="À partir de 6 charactères." onblur="test('i2')">
+                    <span class="infobulle" id="a2"> i </span><br><br>
+                </div>
+                <div id="confirm">
+                    <input class="inputs" style="height: 30px; font-family: 'Roboto-Thin'; padding:5px; font-size:16px; border-width:4px; border-bottom-color: #BCC4CA; border-right-color: #BCC4CA; border-left-color: white;border-top-color: white; border-radius: 10px;" 
+                     size="20" id="i3" type="password" placeholder="Confirmer le mot de passe" onblur="test('i3')">
+                    <span class="infobulle" id="a3">i</span><br><br>
+                </div>
+                <div id="check" style="position: relative; bottom: 10px;">
+                    <input type="checkbox" id="keepCo" name="keepCo">
+                    <label for="keepCo">Rester connecté</label>
+                </div>
+                    
+                    <a id="create" class="but" onclick="create()" title="Créer son compte">Créer un compte</a>
+                    <a id="connect" class="but" onclick="seconnecter()" title="Se connecter">Se connecter</a>
+                    <br>
+                <div id="noacc">
+                    Pas encore de compte ? C'est <u onclick="toregister()">ici</u>.
+                </div>
+                <div id="alacc" style="display: none;">
+                        Déjà un compte ? C'est <u onclick="tosignin()">ici</u>.
+                </div>
+                <br>
+                <div id="result">
+
+                </div>
+            </form>
+
+            <form id="postade" style="display: none;">
+                <h2>Poster du contenu :</h2>
+                <br>
+                <select id="selection" onchange="selected()" style="width: 150px; height: 50px; font-family: 'Roboto-Bold'; ">
+                    <option value="none">choisir une option</option>
+                    <option value="ecrit">Écriture</option>
+                    <option value="dessin">Dessin</option>
+                    <option value="photo">Photographie</option>
+                    <option value="musique">Musique</option>
+                </select>
+                <br>
+                <div class="cont-basic" id="waitSelec" style="display: none;">
+                        <input class="inputs" style="height: 30px; font-family: 'Roboto-Thin'; padding:5px; font-size:16px; border-width:4px; border-bottom-color: #BCC4CA; border-right-color: #BCC4CA; border-left-color: white;border-top-color: white; border-radius: 10px;"
+                            size="20" id="titreOeuvre" type="text" placeholder="Titre de l'oeuvre" >
+                            
+                        <input type="file" style="display: none;" id="fileinput">
+                        <p onclick="chose()" class="classic">
+                            Cliquer pour chercher un fichier sur votre machine :
+                        </p>
+                        <div id="drophere">
+                            <p id="fichierImage" class="disabled">Vous pouvez glisser déposer ici votre fichier image.</p>
+                            <p id="fichierAudio" class="disabled">Vous pouvez glisser déposer ici votre fichier audio (mp3 uniquement)</p>
+                            <textarea name="textarea" id="ecrit" class="disabled"
+                                rows="20" cols="100" placeholder="Contenu de votre oeuvre écrite, vous pouvez glisser déposer un fichier .txt ou un .pdf dans la zone
+Les .pdf peuvent être très long à charger, essayez de ne pas casser votre écran :)" ></textarea>            
+                        </div>
+                        <textarea name="textarea" id="descr"
+                                rows="5" cols="100" placeholder="Courte description de votre oeuvre (facultatif mais sympa)" ></textarea>   
+                        <br>
+                        <div id="colorChoice" style="display: none; padding: 10px; border: solid; border-radius: 30px; background-color: white;">
+                            <p>Choisir une couleur adaptée à votre musique (format rgb)</p>
+                            <label for="red">Valeur de rouge</label>
+                            <input id="red" type="range" name="red"
+                                min="0" max="255" value="255" onmousemove="chColor()"/>
+                                 <br>
+                            <label for="green">Valeur de vert</label>
+                            <input id="green" type="range" name="green"
+                                min="0" max="255" value="255" onmousemove="chColor()"/>
+                                 <br>
+                            <label for="blue">Valeur de bleu</label>
+                            <input id="blue" type="range" name="blue"
+                                min="0" max="255" value="255" onmousemove="chColor()"/>
+                            <br>
+                        </div>
+                        <br>
+                        
+                        <input class="inputs" style="height: 30px; font-family: 'Roboto-Thin'; padding:5px; font-size:16px; border-width:4px; border-bottom-color: #BCC4CA; border-right-color: #BCC4CA; border-left-color: white;border-top-color: white; border-radius: 10px;"
+                        size="20" id="auteur" type="text" readonly>
+                        <p class="classic" style="text-align: center; font-size: 20px; cursor: auto;"  >
+                            Vous ne voulez pas poster votre oeuvre sous ce nom ?
+                             <u onclick='deco()'>
+                                Déconnectez vous
+                            </u> 
+                            et utilisez un autre compte.
+                        </p>
+                        <input class="inputs" style="height: 30px; font-family: 'Roboto-Thin'; padding:5px; font-size:16px; border-width:4px; border-bottom-color: #BCC4CA; border-right-color: #BCC4CA; border-left-color: white;border-top-color: white; border-radius: 10px;"
+                            size="20" id="tags" type="text" placeholder="Tags (facultatif)" >
+                            <br>
+                        <p id="sendData" onclick="sendData()" class="classic">Envoyer</p>
+                        <p id="etape" style="color: blue;"></p>
+                        <p id="fileError" style="color: red;"></p>
+
+                        <canvas id="canvas" style="display: none; position: absolute; top: 100px; left: 0px;"></canvas>
+
+                </div>
+            </form>
+
+            <span id="keur" style="display: none;"></span>
+		</article>
+
+		<!-- 
+			COLOR SCHEME :
+			#FFE8DC
+			#FE9F6D
+			#FC600A
+			#9D3802
+			#341809
+		-->
+
+
+        <!-- SCRIPTS START  -->
+    <script type="text/javascript" src="/system.js"></script>
+    <script type="text/javascript" src="/hashes.js"></script>
+    <script type="text/javascript" src="/pdf/pdf.js"></script>
+    <script type="text/javascript">
+
+        if (system === "mobile") {
+            for (let i = 0; i < document.getElementsByTagName("textarea").length; i++) {
+                document.getElementsByTagName("textarea")[i].cols = 50;
+            }
+        }
+
+        let ilveutcreer = false;
+		setInterval(()=>{
+			document.getElementById("main").style.width = window.innerWidth-30+"px";
+			// document.getElementById("main").style.height = window.innerHeight-30+"px";
+            let offset = document.getElementsByTagName("h1")[0].offsetHeight;
+            
+		}, 50);
+
+        function seconnecter() {
+            document.getElementById("connect").classList.remove("angry-animate");
+            let ndc = document.getElementById("i1").value;
+            let mdp = document.getElementById("i2").value;
+            if (ndc !== "" && mdp !== "") {
+                socket.emit("connectemoistp", {
+                    psd: ndc,
+                    passwd: new Hashes.SHA256().b64(mdp)
+                });
+            } else {
+                document.getElementById("result").innerHTML = "Veuillez remplir correctement les champs.";
+                document.getElementById("connect").classList.add("angry-animate");
+            }
+        }
+        function create() {
+            document.getElementById("create").classList.remove("angry-animate");
+            setTimeout(()=>{
+                let ndc = document.getElementById("i1").value;
+                let mdp = document.getElementById("i2").value;
+                let mdp2 = document.getElementById("i3").value;
+
+                if (ndc !== "" && mdp !== "" && mdp2 !== "") {
+                    if (mdp === mdp2) {
+                        document.getElementById("result").innerHTML = "Demande en cours de traitement.";
+                        socket.emit("createAcc", {
+                            psd: ndc,
+                            passwd: new Hashes.SHA256().b64(mdp)
+                        });
+                    } else {
+                        document.getElementById("result").innerHTML = "Les 2 champs de mots de passe doivent être identique.";
+                        document.getElementById("create").classList.add("angry-animate");
+                    }
+                } else {
+                    document.getElementById("result").innerHTML = "Veuillez remplir correctement les champs.";
+                    document.getElementById("create").classList.add("angry-animate");
+                }
+            },1);
+            
+        }
+        function toregister() {
+            document.getElementById("noacc").style.display = "none";
+            document.getElementById("alacc").style.display = "block";
+            document.getElementById("confirm").style.display = "block";
+            document.getElementById("create").style.display = "block";
+            document.getElementById("connect").style.display = "none";
+            document.getElementById("check").style.display = "none";
+            ilveutcreer = true;
+            for (let i = 0; i < document.getElementsByClassName("infobulle").length; i++) {
+                document.getElementsByClassName("infobulle")[i].style.display = "inline-block";
+            }
+        }
+
+        function tosignin() {
+            document.getElementById("noacc").style.display = "block";
+            document.getElementById("alacc").style.display = "none";
+            document.getElementById("confirm").style.display = "none";
+            document.getElementById("create").style.display = "none";
+            document.getElementById("connect").style.display = "block";
+            document.getElementById("check").style.display = "block";
+            ilveutcreer = false;
+            for (let i = 0; i < document.getElementsByClassName("infobulle").length; i++) {
+                document.getElementsByClassName("infobulle")[i].style.display = "none";
+            }
+        }
+
+        function test(elId) {
+            if (ilveutcreer) {
+                if (document.getElementById(elId).value === "") {
+                    document.getElementById("a"+elId.charAt(1)).style.borderColor = "red";
+                    document.getElementById("a"+elId.charAt(1)).style.color = "red";
+                } else {
+                    if (elId === "i1") {
+                        // test que le pseudo existe
+                        socket.emit("testPsd", document.getElementById(elId).value, parseInt(elId.charAt(1)));
+                    } else {
+                        if (elId === "i3") {
+                            if (document.getElementById("i2").value === document.getElementById("i3").value) {
+                                document.getElementById("a3").style.borderColor = "green";
+                                document.getElementById("a3").style.color = "green";
+                                document.getElementById("a2").style.borderColor = "green";
+                                document.getElementById("a2").style.color = "green";
+                            } else {
+                                document.getElementById("a3").style.borderColor = "red";
+                                document.getElementById("a3").style.color = "red";
+                                document.getElementById("a2").style.borderColor = "red";
+                                document.getElementById("a2").style.color = "red";
+                                document.getElementById("result").innerHTML = "Les mots de passes doivent êtres identiques dans les 2 champs."
+                            }
+                        } else {
+                            document.getElementById("a"+elId.charAt(1)).style.borderColor = "green";
+                            document.getElementById("a"+elId.charAt(1)).style.color = "green";
+                        }
+                    }
+                }
+            }
+        }
+
+        socket.on("testPsd", (bol,num)=>{
+            if (bol) {
+                document.getElementById("a"+num).style.borderColor = "green";
+                document.getElementById("a"+num).style.color = "green";
+            } else {
+                document.getElementById("a"+num).style.borderColor = "red";
+                document.getElementById("a"+num).style.color = "red";
+                document.getElementById("result").innerHTML = "Ce pseudo est déjà utilisé."
+            }
+        });
+
+        // new Hashes.SHA256().b64('text_to_hash') // client side hash
+
+        socket.on("log", (arr, tosign)=>{
+            for (let i = 0; i < arr.length; i++) {
+                document.getElementById(arr[i].id).innerHTML = arr[i].msg;
+                if (tosign !== undefined) {
+                    tosignin();
+                }
+            }
+        });
+
+        socket.on("fail", (str)=>{
+            document.getElementById(str).classList.add("angry-animate");
+        });
+        socket.on("succes", (obj)=>{
+            sessionStorage.setItem('psd', obj.psd);
+            sessionStorage.setItem('passwd', obj.passwd);
+            if (document.getElementById("keepCo").checked) {
+                localStorage.setItem('psd', obj.psd);
+                localStorage.setItem('passwd', obj.passwd);
+            }
+            document.getElementById("i1").value = "";
+            document.getElementById("i2").value = "";
+            document.getElementById("i3").value = "";
+            document.getElementById("result").innerHTML = "";
+            document.getElementById("boite").style.display = "none";
+            document.getElementById("postade").style.display = "flex";
+            document.getElementById("auteur").value = sessionStorage.getItem("psd");
+        });
+
+        window.onload = function() {
+            const drop = document.getElementById("drophere");
+            drop.addEventListener('drop', drop_handler, false);
+            drop.addEventListener('dragenter', dragenter_handler, false);
+            drop.addEventListener('dragover', dragenter_handler, false);
+            drop.addEventListener('dragleave', dragleave_handler, false);
+            const connectObj = {
+                psd: sessionStorage.getItem('psd'),
+                passwd: sessionStorage.getItem('passwd')
+            };
+            if (connectObj.psd !== null && connectObj.passwd !== null) {
+                socket.emit("connectemoistp", connectObj);
+            }
+        }
+
+        let fileContenu;
+        // Événement "dragenter" et "dragover"
+        function dragenter_handler(e) {
+            e.stopPropagation();
+            e.preventDefault();
+        }
+        // Événement "dragleave"
+        function dragleave_handler(e) {
+            e.stopPropagation();
+            e.preventDefault();
+        }
+        // Événement "drop"
+        function drop_handler(e) {
+            e.stopPropagation();
+            e.preventDefault();   
+            const files = [].slice.call(e.dataTransfer.files);
+            const reader = new FileReader();
+			reader.onload = function (event) {
+                typageEtEnvoi(files[0], event.target.result);
+			};
+			reader.readAsDataURL(files[0]);
+        }
+        function typageEtEnvoi(file, dataUri) {
+            const selection = document.getElementById("selection").value;
+            if (selection === "ecrit") {
+                if (file.type === "text/plain" ) {
+                    const nRead = new FileReader();
+                    nRead.onload = function (event) {
+                        document.getElementById("ecrit").value += event.target.result;
+                    };
+                    nRead.readAsText(file);
+                } else if (file.type === "application/pdf") {
+                    function getPageText(pageNum, PDFDocumentInstance) {
+                        // Return a Promise that is solved once the text of the page is retrieven
+                        return new Promise(function (resolve, reject) {
+                            PDFDocumentInstance.getPage(pageNum).then(function (pdfPage) {
+                                // The main trick to obtain the text of the PDF page, use the getTextContent method
+                                pdfPage.getTextContent().then(function (textContent) {
+                                    var textItems = textContent.items;
+                                    var finalString = "";
+
+                                    // Concatenate the string of the item to the final string
+                                    for (var i = 0; i < textItems.length; i++) {
+                                        var item = textItems[i];
+
+                                        finalString += item.str + " ";
+                                    }
+
+                                    // Solve promise with the text retrieven from the page
+                                    resolve(finalString);
+                                });
+                            });
+                        });
+                    }
+
+                    PDFJS.getDocument(dataUri).then(function (pdf) {
+
+                        var pdfDocument = pdf;
+                        // Create an array that will contain our promises 
+                        var pagesPromises = [];
+
+                        for (var i = 0; i < pdf.pdfInfo.numPages; i++) {
+                            // Required to prevent that i is always the total of pages
+                            (function (pageNumber) {
+                                // Store the promise of getPageText that returns the text of a page
+                                pagesPromises.push(getPageText(pageNumber, pdfDocument));
+                            })(i + 1);
+                        }
+
+                        // Execute all the promises
+                        Promise.all(pagesPromises).then(function (pagesText) {
+                            document.getElementById("ecrit").value += pagesText.join(" ");
+                        });
+
+                    }, function (reason) {
+                        // PDF loading error
+                        console.error(reason);
+                    });
+                }
+            } else if (selection === "musique") {
+                if (file.type === "audio/mp3") {
+                    document.getElementById("fichierAudio").innerHTML = "Fichier déposé : "+file.name;
+                    if (document.getElementById("titreOeuvre").value === "") {
+                        document.getElementById("titreOeuvre").value = file.name;
+                    }
+                    b64contenu = dataUri;
+                    fileContenu = file;
+                }
+            } else if (selection === "photo") {
+                if (/image/.test(file.type)) {
+                    let titi = new Image();
+                    titi.src = dataUri;
+                    titi.onload = () =>{
+                        b64contenu = resize_image(titi, "image/jpeg", [1400, 1400]);
+                        b64mini = resize_image(titi, "image/jpeg", [700, 700]);
+                    }
+                }
+            } else if (selection === "dessin") {
+                if (/image/.test(file.type)) {
+                    let titi = new Image();
+                    titi.src = dataUri;
+                    titi.onload = () =>{
+                        b64contenu = resize_image(titi, "image/png", [1400, 1400]);
+                        b64mini = resize_image(titi, "image/png", [700, 700]);
+                    }
+                }
+            }
+            console.log(file.type);
+        }
+
+        function handleFileSelect(evt) {
+		    const files = evt.target.files; // FileList object
+
+		    const reader = new FileReader();
+		    reader.onload = function (event) {
+                typageEtEnvoi(files[0], event.target.result);
+			};
+			reader.readAsDataURL(files[0]);
+		  }
+
+        document.getElementById("fileinput").addEventListener("change", handleFileSelect, false);
+        function chose() {
+			document.getElementById("fileinput").click();
+		}
+
+        function selected() {
+
+            document.getElementById("auteur").value = sessionStorage.getItem("psd");
+            const selection = document.getElementById("selection").value;
+
+            switch (selection) {
+                case "ecrit":
+                    document.getElementById("ecrit").style.display = "inline-block";
+                    document.getElementById("fichierImage").style.display = "none";
+                    document.getElementById("fichierAudio").style.display = "none";
+                    document.getElementById("colorChoice").style.display = "none";
+                break;
+                case "dessin":
+                    document.getElementById("fichierImage").style.display = "block";
+                    document.getElementById("ecrit").style.display = "none";
+                    document.getElementById("fichierAudio").style.display = "none";
+                    document.getElementById("colorChoice").style.display = "none";
+                break;
+                case "photo":
+                    document.getElementById("fichierImage").style.display = "block";
+                    document.getElementById("ecrit").style.display = "none";
+                    document.getElementById("fichierAudio").style.display = "none";
+                    document.getElementById("colorChoice").style.display = "none";
+                break;
+                case "musique":
+                    document.getElementById("fichierAudio").style.display = "block";
+                    document.getElementById("ecrit").style.display = "none";
+                    document.getElementById("fichierImage").style.display = "none";
+                    document.getElementById("colorChoice").style.display = "block";
+                break;
+                default :
+                 
+                break;
+            }
+            if (selection === "none") {
+                document.getElementById("waitSelec").style.display = "none";
+            } else {
+                document.getElementById("waitSelec").style.display = "flex";
+            }
+        }
+
+        function deco() {
+            socket.emit("decomoi");
+			sessionStorage.clear();
+			localStorage.clear();
+            document.getElementById("boite").style.display = "flex";
+            document.getElementById("postade").style.display = "none";
+        }
+        
+        function sendData() {
+            const selection = document.getElementById("selection").value;
+            document.getElementById("fileError").innerHTML = "";
+            if (selection === "ecrit") {
+                let str = document.getElementById("ecrit").value;
+                let nStr = "";
+                for (let i = 0; i < str.length; i++) {
+                    if (str.charCodeAt(i) === 10) {
+                        nStr += "<br>";
+                    } else {
+                        nStr += str[i];
+                    }
+                }
+                const type = selection;
+                const titre = document.getElementById("titreOeuvre").value;
+                const contenu = nStr;
+                const description = document.getElementById("descr").value;
+                const auteur = document.getElementById("auteur").value;
+                const tagsStr = document.getElementById("tags").value;
+
+                const objToSend = {
+                    type: type,
+                    titre: titre,
+                    contenu: contenu,
+                    description: description,
+                    tags: tagsStr
+                };
+                if (titre !== "" && contenu !== "") {
+                    socket.emit("testFile", objToSend);
+                } else {
+                    document.getElementById("fileError").innerHTML = "Veuillez remplir correctement les champs nécessaires.";
+                    document.getElementById("sendData").classList.add("angry-animate");
+                    setTimeout(()=>{
+                        document.getElementById("sendData").classList.remove("angry-animate");
+                    }, 1000);
+                }
+            } else if (selection === "musique") {
+                const type = selection;
+                const titre = document.getElementById("titreOeuvre").value;
+                const contenu = fileContenu.size;
+                const description = document.getElementById("descr").value;
+                const auteur = document.getElementById("auteur").value;
+                const tagsStr = document.getElementById("tags").value;
+
+                const objToSend = {
+                    type: type,
+                    titre: titre,
+                    contenu: contenu,
+                    description: description,
+                    tags: tagsStr,
+                    color: "rgba("+document.getElementById("red").value+","+document.getElementById("green").value+","+document.getElementById("blue").value
+                };
+                if (titre !== "" && contenu !== "") {
+                    socket.emit("testFile", objToSend);
+                } else {
+                    document.getElementById("fileError").innerHTML = "Veuillez remplir correctement les champs nécessaires.";
+                    document.getElementById("sendData").classList.add("angry-animate");
+                    setTimeout(()=>{
+                        document.getElementById("sendData").classList.remove("angry-animate");
+                    }, 1000);
+                }
+            } else if (selection === "photo" || selection === "dessin") {
+                const type = selection;
+                const titre = document.getElementById("titreOeuvre").value;
+                const contenu = b64contenu.slice(0,30);
+                const description = document.getElementById("descr").value;
+                const auteur = document.getElementById("auteur").value;
+                const tagsStr = document.getElementById("tags").value;
+
+                const objToSend = {
+                    type: type,
+                    titre: titre,
+                    contenu: contenu,
+                    description: description,
+                    tags: tagsStr
+                };
+                if (titre !== "" && contenu !== "") {
+                    socket.emit("testFile", objToSend);
+                } else {
+                    document.getElementById("fileError").innerHTML = "Veuillez remplir correctement les champs nécessaires.";
+                    document.getElementById("sendData").classList.add("angry-animate");
+                    setTimeout(()=>{
+                        document.getElementById("sendData").classList.remove("angry-animate");
+                    }, 1000);
+                }
+            }
+        }
+        socket.on("start mp3", ()=>{
+            document.getElementById("etape").innerHTML = "Étape 1/1";
+            wait(true);
+            let slice = b64contenu.slice(0, 49999);
+            socket.emit('slice upload', {
+                cursor: 49999,
+                total: b64contenu.length,
+                slice: slice
+            });
+        });
+        socket.on('request slice upload', (cursor) => {
+            document.getElementById("sendData").innerHTML = Math.round((cursor/b64contenu.length) * 100) + " %";
+            let slice = b64contenu.slice(cursor, cursor+50000);
+            socket.emit('slice upload', {
+                cursor: cursor+50000,
+                total: b64contenu.length,
+                slice: slice
+            });
+        });
+        socket.on("start mini", ()=>{
+            document.getElementById("etape").innerHTML = "Étape 1/2";
+            wait(true);
+            let slice = b64mini.slice(0, 49999);
+            socket.emit('slice upload mini', {
+                cursor: 49999,
+                total: b64mini.length,
+                slice: slice
+            });
+        });
+        socket.on("start main", ()=>{
+            document.getElementById("etape").innerHTML = "Étape 2/2";
+            wait(true);
+            let slice = b64contenu.slice(0, 49999);
+            socket.emit('slice upload main', {
+                cursor: 49999,
+                total: b64contenu.length,
+                slice: slice
+            });
+        });
+        socket.on('request slice upload mini', (cursor) => {
+            document.getElementById("sendData").innerHTML = Math.round((cursor/b64mini.length) * 100) + " %";
+            let slice = b64mini.slice(cursor, cursor+50000);
+            socket.emit('slice upload mini', {
+                cursor: cursor+50000,
+                total: b64mini.length,
+                slice: slice
+            });
+        });
+        socket.on('request slice upload main', (cursor) => {
+            document.getElementById("sendData").innerHTML = Math.round((cursor/b64contenu.length) * 100) + " %";
+            let slice = b64contenu.slice(cursor, cursor+50000);
+            socket.emit('slice upload main', {
+                cursor: cursor+50000,
+                total: b64contenu.length,
+                slice: slice
+            });
+        });
+
+
+        socket.on("fileSucces", bol=>{
+            window.location.replace("/");
+        });
+        socket.on("fileError", str=>{
+            document.getElementById("fileError").innerHTML = str;
+            wait(false);
+        });
+
+        document.getElementById("i2").addEventListener("keydown", e=>{
+            if (e.keyCode === 13) {
+                if (ilveutcreer) {
+                    create();
+                } else {
+                    seconnecter();
+                }
+            }
+        });
+        document.getElementById("i1").addEventListener("keydown", e=>{
+            if (e.keyCode === 13) {
+                if (ilveutcreer) {
+                    create();
+                } else {
+                    seconnecter();
+                }
+            }
+        });
+        document.getElementById("i3").addEventListener("keydown", e=>{
+            if (e.keyCode === 13) {
+                if (ilveutcreer) {
+                    create();
+                }
+            }
+        });
+
+        function chColor() {
+            let color = "rgb("+document.getElementById("red").value+","+document.getElementById("green").value+","+document.getElementById("blue").value+")";
+            document.getElementById("colorChoice").style.backgroundColor = color;
+        }
+
+        function resize_image(img, type, maxSize) {
+            const canvas = document.getElementById('canvas');
+            const ctx = canvas.getContext("2d");
+            // On fixe les dimensions maximales que l'on souhaite pour notre image en sortie
+            const MAX_WIDTH = maxSize[0];
+            const MAX_HEIGHT = maxSize[1];
+            // On récupère les dimensions actuelles de notre image
+            let width = img.width;
+            let height = img.height;
+            // On effectue divers calculs pour obtenir les dimensions de sortie
+            // tout en conservant le ratio largeur/hauteur de notre image
+            if (width > height) {
+                if (width > MAX_WIDTH) {
+                    height *= MAX_WIDTH / width;
+                    width = MAX_WIDTH;
+                }
+            } else {
+                if (height > MAX_HEIGHT) {
+                    width *= MAX_HEIGHT / height;
+                    height = MAX_HEIGHT;
+                }
+            }
+            canvas.width = width;
+            canvas.height = height;
+            ctx.drawImage(img, 0, 0, width, height);
+
+            // On exporte l'image traitée dans notre liste d'images
+            let dataurl = "";
+            if (type === "image/jpeg") {
+                dataurl = canvas.toDataURL('image/jpeg', 1.0);
+            } else if (type === "image/png") {
+                dataurl = canvas.toDataURL("image/png", 1.0);
+            }
+            return dataurl;
+        }
+
+    </script>
+    <script>
+        loadEnd();
+    </script>
+</body>
+
+</html>

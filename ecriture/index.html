@@ -1,0 +1,404 @@
+<!doctype html>
+<html lang="fr">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width"/>
+    <title>Renouv.art</title>
+    <link rel="icon" href="/img/logo.png" />
+    <script src="/socket.io/socket.io.js"></script>
+    <link rel="stylesheet" type="text/css" href="/css/main.css">
+	<style type="text/css">
+		#boite {
+			cursor: pointer;
+		}
+		h1 {
+			text-align: center;
+			margin: auto;
+			font-size: 60px;
+			background-color: rgba(254, 159, 109, 0.3);
+			z-index: 4;
+		}
+		header {
+			background-color: #FE9F6D;
+			display: flex;
+			font-family: "Roboto-Bold";
+			position: fixed;
+			width: 100%; 
+			z-index: 5;
+			visibility: hidden;
+		}
+	</style>
+
+	<style type="text/css">
+			#main {
+				display: flex;
+				width: 100%;
+			}
+			#picker {
+				border: solid;
+				border-radius:0px 30px 30px 30px;
+				-moz-border-radius:0px 30px 30px 30px;
+				-webkit-border-radius:0px 30px 30px 30px;
+				padding: 10px;
+				background-color: rgb(90, 81, 77);
+				overflow-y: scroll;
+			}
+			#picker::-webkit-scrollbar-track {
+				border: 1px solid #000;
+				padding: 2px 0;
+				background-color: #404040;
+				opacity: 0.5;
+				visibility: hidden;
+			}
+			#picker::-webkit-scrollbar {
+				width: 10px;
+			}
+			#picker::-webkit-scrollbar-thumb {
+				border-radius:0px 50px 50px 0px;
+				-moz-border-radius:0px 50px 50px 0px;
+				-webkit-border-radius:0px 50px 50px 0px;
+				box-shadow: inset 0 0 6px rgba(0,0,0,.3);
+				background-color: #737272;
+				border: 1px solid #000;
+			}
+			.pick {
+				cursor: pointer;
+				transition: all 1s;
+				padding: 10px;
+				border-radius: 50px;
+				color: #fe9f6d;
+				text-align: center;
+				background-color: rgba(255, 232, 220, 0.1);
+		    }
+		    .pick:hover {
+		    	background-color: rgba(255, 232, 220, 0.5);
+				color: RGBa(52,24,9, 1);
+				border-radius: 0px;
+		    }
+		    @media only screen and (min-width: 600px) {
+				#picker {
+					min-width: 250px;
+					max-width: 250px;
+					position: relative;
+					/* Y PENSER */
+				}
+			    
+			}
+			@media only screen and (max-width: 600px) {
+			    #main {
+					flex-direction: column-reverse;
+				}
+				#picker {
+					margin: auto;
+					width: 100%;
+				}
+				#mainText {
+					padding: 20px;
+				}
+			}
+			hr {
+				border-color: black;
+			}
+			#content {
+				margin: auto;
+				flex-grow: 3;
+				display: flex;
+				flex-direction: column;
+			}
+			#mainText {
+				margin: auto;
+				padding-left: 10px;
+			}
+			.jarrive {
+				display: none;
+			}
+			#descr {
+				text-align: center;
+				font-style: italic;
+			}
+	</style>
+</head>
+	<header >
+		<h1 id="top"><img src="/img/search.png" id="srcImg" width="50" height="50" style="margin-top: 5px; margin-bottom: 5px; position: relative; top: 20px;">
+			<input style="height: 30px; font-family:'Roboto-Thin'; margin-top: 5px; margin-bottom: 5px; padding:10px; font-size:20px; border-width:4px; border-bottom-color: #BCC4CA; border-right-color: #BCC4CA; border-left-color: white;border-top-color: white; border-radius: 10px;" size="20" type="text" placeholder="Recherche sur Renouv.art" ></h1>
+	</header>
+	<p style="display: none;">L'art pour les lycéens, par les lycéens.</p>
+ <div id="js-user" style="position: absolute; top: 100px;">Salut, si tu veux utiliser ce site web, il faudra activer javascript sinon cette page ne pourra pas fonctionner correctement. Si tu ne sais pas comment faire, et bien de manière générale, si tu es sur un ordinateur je te conseille d'utiliser google chrome ou firefox comme navigateur et si tu es sur mobile, je te conseille de n'aller sur ce site qu'a partir d'un ordinateur !</div>
+	<body>
+		<a id="logo" href="/" style="position: fixed; top: 0px; left: 0px; z-index: 6;"><img src="/img/logo.png" width="80" height="80"></a>
+		<a id="post" href="/post">Poster du contenu</a>
+		<article id="main">
+
+			<div id="picker">
+			</div>
+
+			<div id="content">
+				<p id="descr"></p>
+				<h2 id="titreOeuvre">Comment ça marche ?</h2>
+				<div id="mainText">
+					Clique sur un des liens dans la liste déroulante.<br><br>
+					Le résultat sera affiché ici !<br><br>
+					A bientôt !
+				</div>
+				<h3 id="signature" style="text-decoration: italic; text-align: center;">Le gentil développeur</h3>
+				<div style="display: flex;">
+					<div style="margin: auto;">
+						<h2 id="likes" style="text-decoration: italic; display: inline;"></h2>
+						<img src="/img/keur.png" id="keur">
+					</div>
+				</div>
+				<br>
+				<div id="comments" style="margin: 30px; visibility: hidden;">
+					<h3>Laisser un commentaire :</h3>
+					<div id="comzone">
+						
+					</div>
+					<input style="height: 30px; font-family:'Roboto-Thin'; margin-top: 5px; margin-bottom: 5px; padding:10px; font-size:20px; border-width:4px; border-bottom-color: #BCC4CA; border-right-color: #BCC4CA; border-left-color: white;border-top-color: white; border-radius: 10px;"
+						size="20" type="text" placeholder="Dire quelque chose" onsubmit="sendText()" id="chatUserInput">
+						<div class="pick" onclick="sendText()" style="color: #341809; display: inline; padding: 5px; border: solid; border-width: 1px; ">
+						Envoyer
+					</div>
+				</div>
+				<br>
+				<br>
+				<div class="invisible" id="cominv1"></div>
+				<div class="invisible" id="cominv2"></div>
+			</div>
+		</article>
+
+		<!-- 
+			COLOR SCHEME :
+			#FFE8DC
+			#FE9F6D
+			#FC600A
+			#9D3802
+			#341809
+		-->
+
+
+		<!-- SCRIPTS START  -->
+	<script type="text/javascript" src="/system.js"></script>
+	<script type="text/javascript">
+		setInterval(()=>{
+			document.getElementById("main").style.width = window.innerWidth-30+"px";
+			let offset = document.getElementsByTagName("h1")[0].offsetHeight;
+			document.getElementById("picker").style.maxHeight = window.innerHeight-30-offset+"px";
+		}, 50);
+
+		let dernierePos = 0;
+		let ticking = false;
+
+		window.addEventListener("scroll",  (e)=>{
+		    dernierePos = window.scrollY;
+		    if (!ticking) {
+		        window.requestAnimationFrame(()=>{
+					if (system === "pc") {
+						document.getElementById("picker").style.top = dernierePos+"px";
+					}
+		            ticking = false;
+		            if (window.innerWidth < 692) {
+		              let alpha = 1;
+		              alpha = (1/(dernierePos/90 - 0.2))-0.1;
+		              if (! (alpha < 1 && alpha > 0) ) {
+		                if (dernierePos < 50) {
+		                  alpha = 1;
+		                }
+		              }
+		              const connectEl = document.getElementById("post");
+		              connectEl.style.backgroundColor = "RGBa(52,24,9,"+alpha+")";
+		              connectEl.style.color = "RGBa(254, 159, 109,"+alpha+")";
+		            }
+		        });
+		    }
+		    ticking = true;
+		});
+		
+		socket.emit("getPicks", "ecrit");
+
+		if (/\!oeuvre\=/.test(location.pathname)) {
+			let req = decodeURIComponent(location.pathname).split("!oeuvre=");
+			req.shift();
+			req = req.join("");
+			let reqarr = req.split("&&&");
+			if (reqarr.length === 2) {
+				socket.emit("getContent", {
+					titre: reqarr[1],
+					auteur: reqarr[0]
+				});
+				socket.emit("getComments", {
+					titre: reqarr[1],
+					auteur: reqarr[0]
+				});
+			}
+		}
+
+		socket.on("getecrit", arr=>{
+			document.getElementById("picker").innerHTML = "";
+			for (let i = 0; i < arr.length; i++) {
+				if (arr[i].visible) {
+					const p = document.createElement("p");
+					p.className = "pick";
+					p.appendChild(document.createTextNode(arr[i].auteur + " - " + arr[i].titre));
+					const autreP = document.createElement("p");
+					autreP.className = "jarrive";
+					autreP.innerHTML =  encodeURIComponent(arr[i].auteur) + "%%*!" + encodeURIComponent(arr[i].titre);
+					p.addEventListener("click", e=>{
+						let queryStr = e.srcElement.getElementsByClassName("jarrive")[0].innerHTML;
+						if (/\%\%\*\!/.test(queryStr)) {
+							const auteur = decodeURIComponent(queryStr.split("%%*!")[0]);
+							const titre = decodeURIComponent(queryStr.split("%%*!")[1]);
+							actualFocus.psd = auteur;
+							actualFocus.title = titre;
+
+							document.getElementById("comzone").innerHTML = "";
+							socket.emit("getContent", {
+								titre: titre,
+								auteur: auteur
+							});
+							socket.emit("getComments", {
+								titre: titre,
+								auteur: auteur
+							});
+							document.getElementById("cominv1").innerHTML = auteur;
+							document.getElementById("cominv2").innerHTML = titre;
+						}
+					});
+					p.addEventListener("mousedown", e=>{
+						if (e.buttons === 2 && e.altKey) {
+							let queryStr = e.srcElement.getElementsByClassName("jarrive")[0].innerHTML;
+							if (/\%\%\*\!/.test(queryStr)) {
+								const auteur = decodeURIComponent(queryStr.split("%%*!")[0]);
+								const titre = decodeURIComponent(queryStr.split("%%*!")[1]);
+								if (supprimer) {
+									if (confirm("Êtes vous sûr de vouloir supprimer : "+auteur+ " - "+titre+" ?")) {
+										socket.emit("deleteContent", {
+											titre: titre,
+											auteur: auteur
+										});
+									}
+								} else {
+									if (confirm("Êtes vous sûr de vouloir censurer : "+auteur+ " - "+titre+" ?")) {
+										socket.emit("hideContent", {
+											titre: titre,
+											auteur: auteur
+										});
+									}
+								}								
+							}
+						}
+					});
+					p.addEventListener("contextmenu", e=>{
+						e.preventDefault();
+						if (event.stopPropagation) {
+							event.stopPropagation();
+						}
+						event.cancelBubble = true;
+						return false;
+					});
+
+					p.appendChild(autreP);
+					document.getElementById("picker").appendChild(p);
+					if (i !== arr.length-1) {
+						document.getElementById("picker").appendChild(document.createElement("hr"));
+					} else {
+						if (system !== "pc") {
+							document.getElementById("picker").appendChild(document.createElement("br"));
+							document.getElementById("picker").appendChild(document.createElement("br"));
+						}
+					}
+				}
+			}
+		});
+
+		socket.on("getContent", obj=>{
+			if (obj.type === "ecrit") {
+				let descr = obj.description;
+				if (descr !== "") {
+					descr = '\"'+descr+'\"';
+				}
+
+				document.getElementById("titreOeuvre").innerHTML = "";
+				document.getElementById("descr").innerHTML = "";
+				document.getElementById("mainText").innerHTML = "";
+				document.getElementById("signature").innerHTML = "";
+
+				actualFocus.psd = obj.auteur;
+				actualFocus.title = obj.titre;
+
+				document.getElementById("titreOeuvre").appendChild(document.createTextNode(obj.titre));
+				for (let i = 0; i < descr.split("\n").length; i++) {
+					let np = document.createElement("p");
+					np.style.display = "inline";
+					np.appendChild(document.createTextNode(descr.split("\n")[i]));
+					document.getElementById("descr").appendChild(np);
+					document.getElementById("descr").appendChild(document.createElement("br"));
+				}
+				
+				for (let i = 0; i < obj.contenu.split("<br>").length; i++) {
+					let np = document.createElement("p");
+					np.style.display = "inline";
+					np.appendChild(document.createTextNode(obj.contenu.split("<br>")[i]));
+					document.getElementById("mainText").appendChild(np);
+					document.getElementById("mainText").appendChild(document.createElement("br"));
+				}
+				document.getElementById("signature").appendChild(document.createTextNode(obj.auteur));
+				socket.emit("getLikes", obj.auteur, obj.titre);
+				
+				let scrollInterv = setInterval(()=>{
+					if (scrollY > 1) {
+						scrollTo(0, scrollY-35);
+					} else {
+						clearInterval(scrollInterv);
+					}
+				},5);
+			}
+		});
+
+		socket.on("getComments", arr=>{
+			if (arr.length !== 0) {
+				for (let i = 0; i < arr.length; i++) {
+					let para = document.createElement("p");
+					let text = document.createTextNode(arr[i].auteur+" : "+arr[i].txt);
+					para.appendChild(text);
+					document.getElementById("comzone").appendChild(para);
+				}
+			}
+			document.getElementById("comments").style.visibility = "visible";
+		});
+
+		function sendText() {
+			const auteur = document.getElementById("cominv1").innerHTML;
+			const titre = document.getElementById("cominv2").innerHTML;
+			const text = document.getElementById("chatUserInput").value;
+			if (text !== "" && titre !== "" && auteur !== "") {
+				socket.emit("newCom", {auteur: auteur, titre: titre}, text);
+			}
+			document.getElementById("chatUserInput").value = "";
+		}
+		
+		document.getElementById("chatUserInput").addEventListener("keydown", e=>{
+			if (e.keyCode === 13) {
+				sendText();
+			}
+		});
+
+		socket.on("refreshCom", (titre)=>{
+			if (document.getElementById("cominv2").innerHTML === titre) {
+				document.getElementById("comzone").innerHTML = "";
+				if (document.getElementById("cominv1").innerHTML !== "" && document.getElementById("cominv2").innerHTML !== "") {
+					socket.emit("getComments", {
+						titre: document.getElementById("cominv2").innerHTML,
+						auteur: document.getElementById("cominv1").innerHTML
+					});
+				}
+			}
+		});
+
+	</script>
+	<script>
+		loadEnd();
+	</script>
+</body>
+
+</html>

@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="fr">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width"/>
+    <title>Renouv.art</title>
+    <link rel="icon" href="/img/logo.png" />
+    <script src="/socket.io/socket.io.js"></script>
+    <link rel="stylesheet" type="text/css" href="/css/main.css">
+	<style type="text/css">
+		#boite {
+			cursor: pointer;
+		}
+		h1 {
+			text-align: center;
+			margin: auto;
+			font-size: 60px;
+			background-color: rgba(254, 159, 109, 0.3);
+			z-index: 4;
+		}
+		header {
+			background-color: #FE9F6D;
+			display: flex;
+			font-family: "Roboto-Bold";
+			position: fixed;
+			width: 100%; 
+			z-index: 5;
+			visibility: hidden;
+		}
+	</style>
+
+	<style type="text/css">
+			#main {
+				display: flex;
+				width: 100%;
+			}
+			#picker {
+				border: solid;
+				border-radius:0px 30px 30px 30px;
+				-moz-border-radius:0px 30px 30px 30px;
+				-webkit-border-radius:0px 30px 30px 30px;
+				padding: 10px;
+				background-color: rgb(90, 81, 77);
+				overflow-y: scroll;
+			}
+			#picker::-webkit-scrollbar-track {
+				border: 1px solid #000;
+				padding: 2px 0;
+				background-color: #404040;
+				opacity: 0.5;
+				visibility: hidden;
+			}
+			#picker::-webkit-scrollbar {
+				width: 10px;
+			}
+			#picker::-webkit-scrollbar-thumb {
+				border-radius:0px 50px 50px 0px;
+				-moz-border-radius:0px 50px 50px 0px;
+				-webkit-border-radius:0px 50px 50px 0px;
+				box-shadow: inset 0 0 6px rgba(0,0,0,.3);
+				background-color: #737272;
+				border: 1px solid #000;
+			}
+			.pick {
+				cursor: pointer;
+				transition: all 1s;
+				padding: 10px;
+				border-radius: 50px;
+				color: #fe9f6d;
+				text-align: center;
+				background-color: rgba(255, 232, 220, 0.1);
+		    }
+		    .pick:hover {
+		    	background-color: rgba(255, 232, 220, 0.5);
+				color: RGBa(52,24,9, 1);
+				border-radius: 0px;
+		    }
+		    @media only screen and (min-width: 600px) {
+				#picker {
+					min-width: 250px;
+					max-width: 250px;
+					position: relative;
+					/* Y PENSER */
+				}
+			    
+			}
+			@media only screen and (max-width: 600px) {
+			    #main {
+					flex-direction: column-reverse;
+				}
+				#picker {
+					margin: auto;
+					width: 100%;
+				}
+				#mainText {
+					padding: 20px;
+				}
+			}
+			hr {
+				border-color: black;
+			}
+			#content {
+				margin: auto;
+				flex-grow: 3;
+				display: flex;
+				flex-direction: column;
+			}
+			#mainText {
+				margin: auto;
+				padding-left: 10px;
+			}
+			.jarrive {
+				display: none;
+			}
+			#descr {
+				text-align: center;
+				font-style: italic;
+			}
+
+			.ladder {
+					margin: auto;
+					font-size: 25px;
+			}
+	</style>
+</head>
+	<header >
+		<h1 id="top"><img src="/img/search.png" id="srcImg" width="50" height="50" style="margin-top: 5px; margin-bottom: 5px; position: relative; top: 20px;">
+			<input style="height: 30px; font-family:'Roboto-Thin'; margin-top: 5px; margin-bottom: 5px; padding:10px; font-size:20px; border-width:4px; border-bottom-color: #BCC4CA; border-right-color: #BCC4CA; border-left-color: white;border-top-color: white; border-radius: 10px;" size="20" type="text" placeholder="Recherche sur Renouv.art" ></h1>
+	</header>
+	<p style="display: none;">L'art pour les lycéens, par les lycéens.</p>
+ <div id="js-user" style="position: absolute; top: 100px;">Salut, si tu veux utiliser ce site web, il faudra activer javascript sinon cette page ne pourra pas fonctionner correctement. Si tu ne sais pas comment faire, et bien de manière générale, si tu es sur un ordinateur je te conseille d'utiliser google chrome ou firefox comme navigateur et si tu es sur mobile, je te conseille de n'aller sur ce site qu'a partir d'un ordinateur !</div>
+	<body>
+		<a id="logo" href="/" style="position: fixed; top: 0px; left: 0px; z-index: 6;"><img src="/img/logo.png" width="80" height="80"></a>
+		<a id="post" href="/post">Poster du contenu</a>
+		<article id="main">
+
+			<div id="content">
+				<p id="descr"></p>
+				<h2 id="titreOeuvre">Infos</h2>
+				<div>
+					<p style="text-align: center;">						
+						Le deuxième concours de renouv.art est terminé !<br>
+						Les gagnants sont Mordka, jul et platuna.
+						<!-- Comme la dernière fois, les 3 premiers gagnent des gateaux et le premier gagne un skin.<br>
+						Les règles n'ont pas changées, il faut faire le moins de temps et le moins de sauts possibles.<br>
+						Pour acceder au niveau il faut ce rendre sur <a href="/jeux/tournois">cette page</a> puis rentrer dans la grande maison (cela téléporte sur la map).<br>
+						Bonne chance ! -->
+						<br><br>
+						Voici le ladder final :
+					</p>
+			<div id="ladder" style="z-index: 1; display: flex; flex-direction: column;"></div>
+			<br><br>
+			<!-- <div id="contImg" style="display: flex;">
+					<img style="margin: auto;" src="../infos/gateaux.jpg">
+			</div> -->
+					<br>
+					Si vous voulez poster une video, il faudra contacter le légendaire Lucas Peyre : lucaspeyre2001@gmail.com 
+				</div>
+
+				<br>
+				<h2 id="titreOeuvre">Dev logs</h2>
+				<div id="mainText">
+					mardi 6 novembre : <br> - Correction d'un bug qui empechait de voir les images en grand quand le pseudo de l'auteur contenait une entité HTML spéciale (comme <b>&</b>).
+					<br><br>
+					jeudi 8 novembre : <br> - Les contenus les plus récents apparaissent désormais en premier.
+					<br> - Correction d'un bug qui rendait l'option "Recherche sur Renouv.art" inutilisable.
+					<br><br>vendredi 9 novembre : <br> - Correction d'un bug qui empechait de voir la prévisualisation des images dans la grille (catégories photo et dessin).<br>
+					Le bug apparaissait lorsque le titre ou le nom de l'auteur contenait un caractère servant de limite aux chaînes de caractère ( <b>"</b> ou <b>'</b>).
+					<br><br>mardi 13 novembre : <br> - Implémentation du <a href="/chat">chat textuel</a>, plus d'infos dans la rubrique "Infos" (on s'y attendait pas).
+					<br><br>mercredi 14 novembre : <br> - Correction d'un bug qui nuisait au bon fonctionnement du système de publication ('erreur : mauvais type de fichier' sans raisons).
+					<br><br>jeudi 15 novembre : <br> - Mise en place d'un système sécurisé permettant de modèrer le chat facilement.
+					<br><br>samedi 17 novembre : <br> - Amélioration du système de connexion, nouvelles fonctionnalités dans le <a href="/chat">chat textuel</a>.
+					<br><br>samedi 1 décembre : <br> - Mise en place du système de likes.
+					<br><br>samedi 8 décembre : <br> - Ajout d'une bulle de notification qui permet de rejoindre le chat de partout (désormais obsolète, le chat est accessible depuis l'accueil).
+					<br><br>mardi 1 janvier : <br> - Ajout d'une système de commentaires, je l'ai implémenté sur toutes les catégories sauf la catégorie "musique" je l'ajouterai un de ses 4.
+					<br><br>lundi 25 février : <br> - Ajout d'un système de notification. Résolution de bugs mineurs.
+					<br><br>lundi 4 mars : <br> - Ajout d'une catégorie qui permet de voir les projets que j'ai plus ou moins terminé.
+					<br><br>dimanche 17 mars : <br> - Ajout du système de compétition sur un jeu de plateformes.
+
+					<br><br><br> Si : vous trouvez un bug, vous demandez une suppression de contenu, vous voulez proposer une fonctionnalité ? Contactez moi ! m.lemoniesdesagazan@gmail.com ou sur le <a href="/chat">chat</a>. 
+				</div>
+				<h3 id="signature" style="text-decoration: italic; text-align: center;">Le gentil développeur</h3>
+			</div>
+			<span id="keur" style="display: none;"></span>
+		</article>
+
+		<!-- 
+			COLOR SCHEME :
+			#FFE8DC
+			#FE9F6D
+			#FC600A
+			#9D3802
+			#341809
+		-->
+
+
+		<!-- SCRIPTS START  -->
+	<script type="text/javascript" src="/system.js"></script>
+	<script type="text/javascript">
+		setInterval(()=>{
+			document.getElementById("main").style.width = window.innerWidth-30+"px";
+			let offset = document.getElementsByTagName("h1")[0].offsetHeight;
+		}, 50);
+
+		let dernierePos = 0;
+		let ticking = false;
+
+		window.addEventListener("scroll",  (e)=>{
+		    dernierePos = window.scrollY;
+		    if (!ticking) {
+		        window.requestAnimationFrame(()=>{
+		            ticking = false;
+		            if (window.innerWidth < 692) {
+		              let alpha = 1;
+		              alpha = (1/(dernierePos/90 - 0.2))-0.1;
+		              if (! (alpha < 1 && alpha > 0) ) {
+		                if (dernierePos < 50) {
+		                  alpha = 1;
+		                }
+		              }
+		              const connectEl = document.getElementById("post");
+		              connectEl.style.backgroundColor = "RGBa(52,24,9,"+alpha+")";
+		              connectEl.style.color = "RGBa(254, 159, 109,"+alpha+")";
+		            }
+		        });
+		    }
+		    ticking = true;
+		});
+		
+		const ladder = document.getElementById("ladder");
+		socket.on("ladderTournois", arr=>{
+				ladder.innerHTML = "";
+				let psd = [];
+				// tri data
+				for (let i = 0, rank = 1; i < arr.length; i++, rank++) {
+						let canStore = true;
+						for (let j = 0; j < psd.length; j++) {
+								if (arr[i].psd === psd[j]) {
+										canStore = false;
+										rank--;
+										break;
+								}
+						}
+						if (canStore) {
+								let p = document.createElement("p");
+								p.appendChild(document.createTextNode((rank)+". " + arr[i].psd));
+								p.innerHTML += " &rarr; ";
+								p.appendChild(document.createTextNode(`score : ${arr[i].score}, sauts : ${arr[i].jumps}, temps : ${arr[i].time}`));
+								p.className = "ladder";
+								ladder.appendChild(p);
+								psd.push(arr[i].psd);
+						}
+				}
+		});
+		socket.emit("getTournois", 2);
+	</script>
+	<script>
+		loadEnd();
+	</script>
+</body>
+
+</html>

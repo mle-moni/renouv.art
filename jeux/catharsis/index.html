@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Catharsis ALPHA</title>
+    <link rel="icon" href="../jeux/catharsis/assets/img/logo.png" />
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io.connect(location.origin);
+        if (localStorage.getItem('psd')) {
+			sessionStorage.setItem('psd', localStorage.getItem('psd'))
+		}
+		if (localStorage.getItem('passwd')) {
+			sessionStorage.setItem('passwd', localStorage.getItem('passwd'))
+		}
+		const connectObj = {
+			psd: sessionStorage.getItem('psd'),
+			passwd: sessionStorage.getItem('passwd')
+		};
+		if (connectObj.psd !== null && connectObj.passwd !== null) {
+			socket.emit("connectemoistp", connectObj, "hard");
+        }
+    </script>
+    <script src="../jeux/catharsis/phaser.min.js"></script>
+    <!-- ON CHARGE LE CODE DES MAPS -->
+    <script src="../jeux/catharsis/Ville_ext_1.js"></script>
+    <script src="../jeux/catharsis/Ville_ext_2.js"></script>
+    <script src="../jeux/catharsis/Ville_ext_3.js"></script>
+    <script src="../jeux/catharsis/Ville_int_1.js"></script>
+
+    <script src="../jeux/catharsis/gameLoader.js"></script>
+    <style>
+        #displayCarre {
+            -webkit-box-shadow:inset 0px 0px 0px 5px rgb(84, 69, 69);
+            -moz-box-shadow:inset 0px 0px 0px 5px rgb(84, 69, 69);
+            box-shadow:inset 0px 0px 0px 5px rgb(84, 69, 69);
+            position: absolute;
+            width: 160px;
+            height: 50px;
+            background-color: bisque;
+            display: flex;
+        }
+        .touche {
+            cursor: pointer;
+            background-color: red;
+            position: absolute;
+        }
+        .toRemove {
+            user-select: none;
+        }
+    </style>
+</head>
+<body style="background-color: black;">
+    <audio id="music" loop></audio>
+    <div id="ladder" style="visibility: hidden; z-index: 1; display: flex; flex-direction: column;">
+    </div>
+    <script>
+        
+        const mainAudio = document.getElementById('music');
+        mainAudio.volume = 0.4;
+        window.addEventListener('focus', function() {
+            mainAudio.volume = 0.4;
+        });
+
+        window.addEventListener('blur', function() {
+            mainAudio.volume = 0.1;
+        });
+        let canRestart = true;
+        
+        genScope();
+        
+    </script>
+
+</body>
+
+</html>

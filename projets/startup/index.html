@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width"/>
+    <title>Présentation</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <script type="text/javascript">
+        const socket = io.connect(location.origin);
+    </script>
+    <style type="text/css">
+        * {
+            background-color: #587F00;
+            color: white;
+        }
+        .margoto {
+            margin: auto;
+        }
+        #titre {
+            font-size: 50px;
+            text-align: center;
+        }
+        #contenu {
+            font-size: 30px;
+        }
+        .ctrl {
+            border-radius:50px;
+            -moz-border-radius:50px;
+            -webkit-border-radius:50px;
+            border: solid 1px;
+            padding: 5px;
+            margin: auto;
+        }
+    </style>
+</head>
+<body >
+    
+    <div id="mainDiv" style="display: flex; flex-direction: column; visibility: visible;" >
+        <h1 id="titre" class="margoto">Titre</h1><br>
+        <p class="margoto" id="contenu">Ceci est un contenu</p>
+        <img src="">
+        <br><br>
+        <div style="display: flex;">
+            <button class="ctrl" style="" onclick="socket.emit('changelapage', -1)">Précédent</button>
+            <button class="ctrl" style="" onclick="socket.emit('changelapage', 1)">Suivant</button>
+        </div>
+    </div>
+        
+
+    <script type="text/javascript">
+        let mainIndex = 0;
+        const pages = [
+            {
+                titre: "Study' Tea",
+                contenu: "-Application mobile<br>-Déverouillage = coup d'oeil sur le cours"
+            },
+            {
+                titre: "Promesse",
+                contenu: "Nous voulons permettre à de nombreux utilisateurs l’accès à un meilleur avenir, en mettant à dispostition un rappel du cours en un coup d’œil à chaque déverrouillage du téléphone."
+            },
+            {
+                titre: "Pourquoi ?",
+                contenu: "Les élèves n'ouvrent plus leur cahier lorsqu'ils rentrent des cours. <br> Le niveau en mathématiques général en France semble baisser."
+            },
+            {
+                titre: "Pourquoi maintenant ?",
+                contenu: "Si nous voulons réduire ou inverser cette tendance, il faut réagir au plus vite."
+            },
+            {
+                titre: "Notre ambition :",
+                contenu: "Nous voulons changer les choses, et faire en sorte que, au vu des multiples déverrouillages quotidien, les élèves retiennent plus facilement leur cours."
+            },
+            {
+                titre: "Cible",
+                contenu: "Nous voulons cibler les lycées et collèges qui veulent de meilleurs résultats pour leurs élèves, les étudiants et toutes les personnes qui veulent continuer d'approndir leur connaissances. Nos communications se feront via les reseaux sociaux."
+            },
+            {
+                titre: "Nos produits : (1)",
+                contenu: "Une API web sera disponible pour nos clients, elle qui permettra aux proffesseurs de mettre à disposition de leur élèves de brefs résumés des cours."
+            },
+            {
+                titre: "Nos produits : (2)",
+                contenu: "Les élèves pourront ensuite y acceder via l'application mobile : (corentin montre le prototype)"
+            },
+            {
+                titre: "Le fonctionnement :",
+                contenu: "Le déverouillage du portable est une action qui est répétée plus de 100 fois par jour chez les jeunes. Nous voulons donc en tirer profit, en les faisant réviser presque de manière inconsciente."
+            },
+            {
+                titre: "L'innovation :",
+                contenu: "Il existe déjà des applications qui montre des mots de vocabulaire anglais au dévérouillage, mais pas pour les maths. Notre application sera aussi très flexible, puisque personnalisable."
+            },
+            {
+                titre: "Nos partenaires :",
+                contenu: "Peut être l'éducation Nationale, google ads (publicité)"
+            },
+            {
+                titre: "Stratégie :",
+                contenu: "Nous voulons devenir partenaire de l'éducation Nationale, ce qui nous donnerait un énorme marché. L'application serait aussi accessible aux particuliers."
+            },
+            {
+                titre: "Agenda et développement :",
+                contenu: "Nous souhaitons développer cette application le plus tôt possible.<br>Dans le futur nous pourrions étendre nos services à d'autres matières scolaires."
+            }
+
+        ];
+        document.onkeyup = (e)=>{
+            if (e.keyCode === 13) {
+                mainIndex ++;
+                changePage(mainIndex);
+            } else if (e.keyCode === 39) {
+                mainIndex ++;
+                changePage(mainIndex);
+            } else if (e.keyCode === 37) {
+                mainIndex --;
+                changePage(mainIndex);
+            }
+        }
+
+        function changePage(index) {
+            if (index > pages.length - 1 || index < 0) {
+
+            } else {
+                document.getElementById("titre").innerHTML = pages[index].titre;
+                document.getElementById("contenu").innerHTML = pages[index].contenu;
+            }
+        }
+        function changeIndex(num) {
+            mainIndex += num;
+            changePage(mainIndex)
+        }
+        changePage(0);
+
+        socket.on("changelapage", num=>{
+            changeIndex(num);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="fr">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width"/>
+    <title>Renouv.art</title>
+    <link rel="icon" href="img/logo.png" />
+    <script src="/socket.io/socket.io.js"></script>
+    <link rel="stylesheet" type="text/css" href="/css/main.css">
+	<style type="text/css">
+		#boite {
+			cursor: pointer;
+		}
+		h1 {
+			text-align: center;
+			margin: auto;
+			padding-bottom: 50px;
+			padding-top: 50px;
+			font-size: 60px;
+			background-color: rgba(254, 159, 109, 0.3);
+			z-index: 4;
+		}
+		header {
+			background-color: #FE9F6D;
+			display: flex;
+			font-family: "Roboto-Bold";
+			position: fixed;
+			width: 100%; 
+			z-index: 5;
+			visibility: hidden;
+		}
+		#main {
+			margin-left: 15%;
+			margin-right: 18%;
+		}
+
+		#conteneurCarre {
+			display: flex;
+			flex-wrap: wrap;
+
+		}
+		.carres {
+			width: 200px;
+			height: 200px;
+			margin: auto;
+			display: flex;
+			padding: 30px;
+		}
+		.souscarres {
+			background-color: black;
+			width: 180px;
+			height: 180px;
+			margin: auto;
+			cursor: pointer;
+			border: solid;
+			border-width: 5px;
+			border-color: RGBa(52,24,9, 1);
+			-webkit-box-shadow:0px 0px 50px 5px none ;
+			-moz-box-shadow:0px 0px 50px 5px none ;
+			box-shadow:0px 0px 50px 5px none ;
+			transition: all 0.5s;
+			display: flex;
+		}
+		.souscarres:hover {
+			-webkit-box-shadow:0px 0px 50px 5px #312c2c ;
+			-moz-box-shadow:0px 0px 50px 5px #312c2c ;
+			box-shadow:0px 0px 50px 5px #312c2c ;
+		}
+		img {
+			width: inherit;
+		}
+		.arrondi {
+			border-radius:50px;
+			-moz-border-radius:50px;
+			-webkit-border-radius:50px;
+		}
+
+		.mainImg:hover {
+
+		}
+
+		.mainImg{
+			-webkit-transition: width 2s; /* Safari */
+			transition: width 0.5s;
+			margin: auto;
+		}
+
+	</style>
+</head>
+	<header >
+		<h1 id="top"><img src="/img/search.png" id="srcImg" width="50" height="50" style="margin-top: 5px; margin-bottom: 5px; position: relative; top: 20px;">
+			<input style="height: 30px; font-family:'Roboto-Thin'; margin-top: 5px; margin-bottom: 5px; padding:10px; font-size:20px; border-width:4px; border-bottom-color: #BCC4CA; border-right-color: #BCC4CA; border-left-color: white;border-top-color: white; border-radius: 10px;" size="20" type="text" placeholder="Recherche sur Renouv.art" ></h1>
+	</header>
+	<p style="display: none;">L'art pour les lycéens, par les lycéens.</p>
+ <div id="js-user" style="position: absolute; top: 100px;">Salut, si tu veux utiliser ce site web, il faudra activer javascript sinon cette page ne pourra pas fonctionner correctement. Si tu ne sais pas comment faire, et bien de manière générale, si tu es sur un ordinateur je te conseille d'utiliser google chrome ou firefox comme navigateur et si tu es sur mobile, je te conseille de n'aller sur ce site qu'a partir d'un ordinateur !</div>
+	<body>
+		<a id="logo" href="/" style="position: fixed; top: 0px; left: 0px; z-index: 6;"><img id="logoimg" src="/img/logo.png" width="80" height="80"></a>
+		<a id="post" href="/post">Poster du contenu</a>
+		<article id="main">
+			<br>
+			<h2 id="citation">&quot;Ne faites pas des oeuvres parfaites mais des oeuvres de coeur.&quot;</h2>
+
+			
+			<div id="conteneurCarre">
+				
+				<div class="carres">
+					<a class="souscarres arrondi" href="/dessin">
+						<img class="arrondi mainImg" src="img/dessin.png">
+					</a>
+				</div>
+				<div class="carres">
+					<a class="souscarres arrondi" href="/ecriture">
+						<img class="arrondi mainImg" src="img/ecrit.png">
+					</a>
+				</div>
+				<div class="carres">
+					<a class="souscarres arrondi" href="/musique">
+						<img class="arrondi mainImg" src="img/musique.png">
+					</a>
+				</div>
+				<div class="carres">
+					<a class="souscarres arrondi" href="/photo">
+						<img class="arrondi mainImg" src="img/photo.png">
+					</a>
+				</div>
+				<div class="carres">
+					<a class="souscarres arrondi" href="/chat">
+						<img class="arrondi mainImg" src="img/chat.png">
+					</a>
+				</div>
+				<div class="carres">
+					<a class="souscarres arrondi" href="/projets">
+						<img class="arrondi mainImg" src="img/jeuvideo.png">
+					</a>
+				</div>
+				<div class="carres">
+					<a class="souscarres arrondi" href="/infos">
+						<img class="arrondi mainImg" src="img/infos.png">
+					</a>
+				</div>
+
+			</div>
+		</article>
+		<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+		<!-- #PROPRE  ;) -->
+		<span id="keur" style="display: none;"></span>
+		<!-- 
+			COLOR SCHEME :
+			#FFE8DC
+			#FE9F6D
+			#FC600A
+			#9D3802
+			#341809
+		-->
+
+
+		<!-- SCRIPTS START  -->
+	<script type="text/javascript" src="/system.js"></script>
+	<script type="text/javascript">
+
+		document.getElementById("logoimg").width = document.getElementsByTagName("header")[0].offsetHeight;
+		document.getElementById("logoimg").height = document.getElementsByTagName("header")[0].offsetHeight;
+
+		let dernierePos = 0;
+		let ticking = false;
+
+		function resize(scroll_pos) {
+		    const el = document.getElementById("top");
+			const logo = document.getElementById("logoimg");
+		    el.style.paddingTop = (50-scroll_pos)+"px";
+		    el.style.paddingBottom = (50-scroll_pos)+"px";
+			logo.width = document.getElementsByTagName("header")[0].offsetHeight;
+			logo.height = document.getElementsByTagName("header")[0].offsetHeight;
+
+		    if (70-scroll_pos < 0) {
+		        el.style.paddingTop = 0+"px";
+		        el.style.paddingBottom = 0+"px";
+		    }
+		}
+
+		window.addEventListener("scroll",  (e)=>{
+		    dernierePos = window.scrollY;
+		    if (!ticking) {
+		        window.requestAnimationFrame(()=>{
+		            resize(Math.round(dernierePos/10));
+		            ticking = false;
+		            if (window.innerWidth < 692) {
+		              let alpha =1;
+		              alpha = (1/(dernierePos/90 - 0.2))-0.1;
+		              if (! (alpha < 1 && alpha > 0) ) {
+		                if (dernierePos < 50) {
+		                  alpha = 1;
+		                }
+		              }
+		              const connectEl = document.getElementById("post");
+		              connectEl.style.backgroundColor = "RGBa(52,24,9,"+alpha+")";
+		              connectEl.style.color = "RGBa(254, 159, 109,"+alpha+")";
+		            }
+		        });
+		    }
+		    ticking = true;
+		});
+
+	</script>
+	<script>
+		loadEnd();
+	</script>
+</body>
+
+</html>

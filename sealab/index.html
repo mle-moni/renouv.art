@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="icon" href="../sealab/img/sealab_logo.png" />
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Sealab</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    <style>
+        @font-face {
+            font-family: "Roboto-Bold";
+                src: url("../font/Roboto-Bold.ttf");
+        }
+        @font-face {
+            font-family: "Roboto-Thin";
+                src: url("../font/Roboto-Thin.ttf");
+        }
+        html {
+            background-color: rgba(0,0,0,0.1);
+            font-family: "Roboto-Thin";
+        }
+        body {
+            display: grid;
+        }
+        p {
+            font-size: 20px;
+        }
+        @media only screen and (max-width: 500px) {
+            body {
+                grid-auto-columns: 1fr 1fr 1fr 1fr;
+                grid-auto-rows: 100px auto 1fr;
+                grid-template-areas:
+                "titre      titre       titre       titre"
+                "titre      titre       titre       titre"
+                "contenu    contenu     contenu     contenu"
+                "bas        bas         bas         bas";
+            }
+        }
+        @media only screen and (min-width: 500px) {
+            body {
+                grid-auto-columns: 50px auto 50px;
+                grid-auto-rows: auto auto auto;
+                grid-template-areas:
+                "titre      titre       titre"
+                "v1         contenu     v3"
+                "bas        bas         bas";
+            }
+        }
+        h1 {
+            grid-area: titre;
+            text-align: center;    
+        }
+        #content {grid-area: contenu;}
+        footer {grid-area: bas;}
+
+        iframe {
+            width: 100%;
+            height: 300px;
+            border-style: solid;
+            border-radius:10px;
+            -moz-border-radius:10px;
+            -webkit-border-radius:10px;
+        }
+        
+        #logo {
+            display: inline;
+        }
+
+        img.content_img {
+            width: 100%;
+            height: auto;
+            border-radius:10px;
+            -moz-border-radius:10px;
+            -webkit-border-radius:10px;
+            border-style: solid;
+        }
+
+    </style>
+</head>
+<body>
+    <h1><img id="logo" src="../sealab/img/sealab.png"><br>
+        Drone Marin</h1>
+    <div id="content">
+        <article>
+            <h2>Notre idée :</h2>
+            <p>Pour limiter les pertes de récolte dans l'étang de Thau, nous avons développé une solution performante et facile d'utilisation 
+                pour faciliter la prise d'information sur l'étang.</p>
+                <img class="content_img" src="../sealab/img/etang_thau.png">
+            <p>Ce projet à pu voir le jour grâce au travail acharné de notre équipe ITEC, qui a modélisé la solution sur solidworks. Mais aussi grâce aux talents de l'équipe SIN, qui c'est occupé de la partie logicielle et électronique.</p>
+        </article>
+
+        <article>
+            <h2>Simulation de déplacement :</h2>
+            <p>Nous avons créé une simulation du déplacement autonome de notre drone marin.</p>
+            <iframe src="https://renouv.art/jeux/simulation">
+                <p>Your browser does not support iframes.</p>
+            </iframe>
+        </article>
+
+        <article>
+            <h2>Le code :</h2>
+            <p>Si vous voulez jeter un coup d'oeil au code source du projet (Arduino), voici notre <a href="https://github.com/backup-redz?tab=repositories">Github</a></p>
+        </article>
+    </div>
+
+    <footer class="">
+        <h2>Des questions ?</h2>
+        <p>
+            Vous pouvez nous contacter à cette adresse mail : <a href="mailto:m.lemoniesdesagazan@gmail.com">m.lemoniesdesagazan@gmail.com</a>
+        </p>
+        <br>
+    </footer>
+</body>
+</html>

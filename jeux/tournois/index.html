@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Concours</title>
+    <link rel="icon" href="../jeux/tournois/assets/img/tournois.ico" />
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io.connect(location.origin);
+        if (localStorage.getItem('psd')) {
+			sessionStorage.setItem('psd', localStorage.getItem('psd'))
+		}
+		if (localStorage.getItem('passwd')) {
+			sessionStorage.setItem('passwd', localStorage.getItem('passwd'))
+		}
+		const connectObj = {
+			psd: sessionStorage.getItem('psd'),
+			passwd: sessionStorage.getItem('passwd')
+		};
+		if (connectObj.psd !== null && connectObj.passwd !== null) {
+			socket.emit("connectemoistp", connectObj, "hard");
+        }
+    </script>
+    <script src="../jeux/tournois/gameLoader.js"></script>
+    <script src="../jeux/tournois/phaser.min.js"></script>
+    <script src="../jeux/tournois/MainMenu.js"></script>
+    <script src="../jeux/tournois/Level1.js"></script>
+    <script src="../jeux/tournois/Level2.js"></script>
+    <script src="../jeux/tournois/Level3.js"></script>
+    <style>
+        .ladder {
+            margin: auto;
+            font-size: 25px;
+        }
+    </style>
+</head>
+<body style="background-color: black;">
+    <p id="jumps" style="position: absolute; left: 10px; top: 10px; color: red; z-index: 1;">0 sauts</p>
+    <div id="ladder" style="visibility: hidden; z-index: 1; display: flex; flex-direction: column;">
+    </div>
+    <script>
+        const ladder = document.getElementById("ladder");
+        let canRestart = true;
+        
+        let scoreActuel = {
+            psd: "Votre score de cet partie",
+            score: 99999999,
+            jumps: 999,
+            time: 999
+        };
+        genScope();
+        
+        function jumpSetter(num) {
+            document.getElementById("jumps").innerHTML = num + " sauts (appuie sur r pour recommencer)";
+        }
+        function transformMarks() {
+			let str = document.getElementById("chatBody").innerHTML;
+			str = str.replace(/\.b/gi, "<b>");
+			str = str.replace(/\!b/gi, "</b>");
+			str = str.replace(/\.g/gi, "<b>");
+			str = str.replace(/\!g/gi, "</b>");
+			str = str.replace(/\.s/gi, "<u>");
+			str = str.replace(/\!s/gi, "</u>");
+			str = str.replace(/\.u/gi, "<u>");
+			str = str.replace(/\!u/gi, "</u>");
+			str = str.replace(/\.i/gi, "<i>");
+			str = str.replace(/\!i/gi, "</i>");
+			document.getElementById("chatBody").innerHTML = str;
+        }
+        function sendTxt(text) {
+            if (text !== "") {
+                socket.emit("gameChat", text);
+            }
+        }
+    </script>
+
+</body>
+
+</html>

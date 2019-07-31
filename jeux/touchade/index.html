@@ -1,0 +1,520 @@
+<!doctype html>
+<html lang="fr">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width"/>
+	<title>TOUCHADE</title>
+	<script src="/socket.io/socket.io.js"></script>
+	<script type="text/javascript">
+		const socket = io.connect(location.origin);
+		if (localStorage.getItem('psd')) {
+			sessionStorage.setItem('psd', localStorage.getItem('psd'))
+		}
+		if (localStorage.getItem('passwd')) {
+			sessionStorage.setItem('passwd', localStorage.getItem('passwd'))
+		}
+		const connectObj = {
+			psd: sessionStorage.getItem('psd'),
+			passwd: sessionStorage.getItem('passwd')
+		};
+		if (connectObj.psd !== null && connectObj.passwd !== null) {
+			socket.emit("connectemoistp", connectObj, "hard");
+		}
+		socket.on("logAndComeBack", ()=>{
+			sessionStorage.setItem("goTo", location.pathname);
+			location.replace("/login");
+		});
+	</script>
+	<script type="text/javascript" src="../jeux/touchade/three.min.js"></script>
+	<script src="../jeux/touchade/GLTFLoader.js"></script>
+	<script src="../jeux/touchade/gameLoader.js"></script>
+	<style>
+		body { margin: 0; padding: 0; overflow: hidden;}
+		canvas { width: 100%; height: 100%; display: none;}
+		h1 {
+			position: fixed;
+			top: 0px;
+			color: white;
+			font-size: 15px;
+		}
+		h2 {
+			position: fixed;
+			top: 60px;
+			color: white;
+			font-size: 15px;
+		}
+		#score {
+			top: 90px;
+		}
+		#leaderboard {
+			position: fixed;
+			top: 0px;
+			right: 10px;
+			color: white;
+			font-size: 13px;
+		}
+		#instruct {
+			position: fixed;
+			bottom: 10px;
+			right: 0px;
+			color: white;
+			font-size: 13px;
+		}
+		#ping {
+			top: 30px;
+		}
+		#setter {
+			color: white;
+			position: fixed;
+			top: 0px;
+			left: 0px;
+			display: none;
+			text-align: center;
+			filter: blur(0px);
+			background-color: black;
+			border:0.5px solid #ffffff;
+			padding: 20px;
+		}
+		.click {
+			cursor: pointer;
+		}
+		.timers {
+			width: 100px;
+			height: 20px;
+			background-color: blue;
+		}
+		#timer {
+			position: absolute;
+			left: 10px;
+			top: 150px;
+			color: black;
+			text-align: center;
+		}
+		#hp {
+			position: fixed;
+			bottom: 20px;
+			background-color: red;
+			width: 500px;
+			height: 20px;
+			color: black;
+			text-align: center;
+		}
+		#dead {
+			position: fixed;
+			visibility: hidden;
+		}
+		.dead {
+			background-color: black;
+			border: 0.5px solid #ffffff;
+			padding: 20px;
+			color: white;
+			cursor: pointer;
+			text-align: center;
+		}
+		#menu {
+			display: flex;
+			position: relative;
+		}
+		.menu {
+			padding: 30px;
+			margin: 20px;
+			position: static;
+			cursor: pointer;
+			border: 0.5px solid #ffffff;
+			font-size: 20px;
+		}
+		.transi {
+			background-color: black;
+			transition: all 1s;
+			color: white;
+		}
+		.transi:hover {
+			background-color: #ffffff;
+			transition: all 1s;
+			color: black;
+		}
+		.arrondi {
+			border-radius:50px;
+			-moz-border-radius:50px;
+			-webkit-border-radius:50px;
+		}
+	</style>
+</head>
+
+<body style="background-color: black;">
+	<audio id="music0" src="../jeux/touchade/audio/turfu.mp3" style="display: none;" autoplay></audio>
+	<audio id="music1" src="" style="display: none;"></audio>
+	<script>
+		let currentEl = 0;
+		const musicEl = [
+			document.getElementById("music0"),
+			document.getElementById("music1")
+		];
+		musicEl[1].src = musicEl[0].src;
+		setInterval(()=>{
+			if (musicEl[currentEl].currentTime < 16.4 && musicEl[currentEl].currentTime > 16.28) {
+				currentEl ++;
+				currentEl %= 2;
+				musicEl[currentEl].play();
+			}
+		}, 100);
+	</script>
+	<article id="menu">
+		<div style="margin: auto; display: flex;">
+			<h2 class="menu arrondi transi" onclick="showSkins()">Skins</h2>
+			<h1 class="menu arrondi transi" style="font-size: 30px;" onclick="play()">Jouer</h1>
+			<h2 class="menu arrondi transi">Options</h2>
+		</div>
+	</article>
+	<article id="skins" style="display: none; ">
+		<div style="margin: auto; display: flex; flex-direction: column;">
+			
+		</div>
+	</article>
+	<article id="play" style="display: none;">
+		<div id="blur">
+			<h1 id="fps">FPS : </h1>
+			<h1 id="ping">Ping : </h1>
+			<h2 id="protect">Champ de protection : 500/500</h2>
+			<h2 id="score">Score :</h2>
+			<h4 id="leaderboard"></h4>
+			<h4 id="instruct">
+				Contrôles : <br>
+				- 'y' pour lock / delock la camera <br>
+				- 'a' pour tirer <br>
+				- les fleches pour vous orienter <br>
+				- espace pour prendre de l'élan <br>
+				⟶ <u onclick="personalise()" class="click">personnaliser les contrôles</u>
+			</h4>
+			<div id="timer" >
+				<div class="timers arrondi">Sniper</div><br>
+				<div class="timers arrondi">Acceleration</div>
+			</div>
+			<div id="hp" class="arrondi">Champ de protection :</div>
+		</div>
+	</article>
+
+	<div id="setter" class="arrondi">
+		<p id="help">Clique sur la touche que tu veux changer :</p>
+		<div id="keysBind"></div>
+		<p onclick="saveBindings()" class="click">Sauvegarder mes préférences</p>
+		<p onclick="retour()" class="click">Retour</p>
+	</div>
+	<div id="dead" >
+		<p class="arrondi dead" onclick="controller(0, 'undeadme')">Reprendre / Commencer</p>
+		<p class="arrondi dead" onclick="retourMenu()">Retour au menu</p>
+	</div>
+		<!-- SCRIPTS START  -->
+	<script type="text/javascript">
+		const menu = document.getElementById("menu");
+		menu.style.top = (innerHeight / 2) - (menu.offsetHeight / 2) + "px";
+		const playPage = document.getElementById("play");
+		const skinsPage = document.getElementById("skins");
+		
+		let controller = false;
+
+		socket.on("getId", id => {
+			controller = genGame(id);
+		});
+
+		socket.on("update", (obj, id) => {
+			if (controller !== false) {
+				controller(1, "update", id, obj);
+			} else {
+				console.log("ok")
+			}
+		});
+
+		socket.on("shot", (obj) => {
+			if (controller !== false) {
+				controller(0, "shot", "artichaut, evidemment ^^", obj);
+			}
+		});
+
+		socket.on("deletePlayer", (str) => {
+			if (controller !== false) {
+				controller(0, "delete", "artichaut, evidemment ^^", str);
+			}
+		});
+
+		socket.on("meteor", (obj) => {
+			if (controller !== false) {
+				controller(0, "meteor", "artichaut, evidemment ^^", obj);
+			}
+		});
+
+		socket.on("deadFrom", (obj) => {
+			if (controller !== false) {
+				controller(0, "deadFrom", "artichaut, evidemment ^^", obj);
+			}
+		});
+
+		socket.on("leaderboard", (obj) => {
+			if (controller !== false) {
+				controller(0, "leaderboard", "artichaut, evidemment ^^", obj);
+			}
+		});
+
+		const defbindings = {
+			descendre: 38,
+			monter: 40,
+			gauche: 37,
+			droite: 39,
+			avancer: 32,
+			tirer: 65,
+			cameraLock: 89,
+			acceleration: 90,
+			stabilisation: 88,
+			looping: 69,
+			snipe: 82
+		};
+		let bindings;
+		let changeTarget = "";
+		let isBinding = false;
+		if (localStorage.getItem("settings") === null) {
+			bindings = defbindings;
+		} else {
+			bindings = JSON.parse(localStorage.getItem("settings"));
+			for (let key in defbindings) {
+				if (bindings[key] === undefined) {
+					bindings[key] = defbindings[key];
+				}
+			}
+		}
+		
+
+		document.body.onkeydown = e=>{
+			if (controller !== false) {
+				if (isBinding === false) {
+					switch (e.keyCode) {
+						case bindings.descendre: // haut
+							if (key.up === false) {
+								key.up = true;
+							}
+						break;
+						case bindings.monter: // bas
+							if (key.down === false) {
+								key.down = true;
+							}
+						break;
+						case bindings.droite: // droite
+							if (key.right === false) {
+								key.right = true;
+								rz_to0 = false;
+							}
+						break;
+						case bindings.gauche: //gauche
+							if ( key.left === false) {
+								key.left = true;
+								rz_to0 = false;
+							}
+						break;
+						case bindings.avancer: //avancer 
+							if (key.go === false) {
+								key.go = true;
+							}
+						break;
+						case bindings.acceleration: 
+							if (key.acceleration === false) {
+								key.acceleration = true; 
+							}
+						break;
+						case bindings.stabilisation:
+							if (key.stabilisation === false) {
+								key.stabilisation = true;
+							}
+						break;
+						case bindings.looping:
+							if (key.looping === false) {
+								key.looping = true;
+							}
+						break;
+						case bindings.tirer:
+							if (key.tirer === false) {
+								key.tirer = true;
+							}
+						break;
+						case bindings.snipe:
+							if (key.snipe === false) {
+								key.snipe = true;
+							}
+						break;
+
+					}
+				} else {
+					setNew(e.keyCode);
+				}
+			}
+		};
+
+		document.body.onkeyup = e=>{
+			// console.log(e.keyCode)
+			if (isBinding === false) {
+				switch (e.keyCode) {
+					case bindings.descendre: // haut
+						key.up = false;
+					break;
+					case bindings.monter: // bas
+						key.down = false;
+					break;
+					case bindings.droite: // droite
+						key.right = false;
+						if (key.left === false) {
+							rz_to0 = true;
+						}
+					break;
+					case bindings.gauche: //gauche
+						key.left = false;
+						if (key.right === false) {
+							rz_to0 = true;
+						}
+					break;
+					case bindings.cameraLock: // y 
+						cameraLock = !cameraLock;
+					break;
+					case bindings.freiner: //freiner
+						key.break = false;
+					break;
+					case bindings.avancer: //avancer
+						key.go = false;
+					break;
+					case bindings.tirer: 
+						key.tirer = false;
+					break;
+					case bindings.acceleration: 
+						key.acceleration = false;
+					break;
+					case bindings.stabilisation:
+						key.stabilisation = false;
+					break;
+					case bindings.looping:
+						key.looping = false;
+					break;
+					case bindings.snipe:
+						key.snipe = false;
+					break;
+				}
+			}
+		};
+
+		function personalise() {
+			document.getElementById("blur").style.filter = "blur(2px)";
+			document.getElementById("setter").style.display = "block";
+			isBinding = true;
+			const parent = document.getElementById("keysBind");
+			for (let key in bindings) {
+				let el = document.createElement("p");
+				el.id = "change"+key;
+				el.onclick = (e) => {
+					changeTarget = e.path[0].id.split("change")[1];
+					document.getElementById("help").innerHTML = "Maintenant, appuie sur la touche que tu veux utiliser à la place.";
+					document.getElementById("setter").style.left = (window.innerWidth / 2) - (document.getElementById("setter").offsetWidth/2) +"px";
+					document.getElementById("setter").style.top = (window.innerHeight / 2) - (document.getElementById("setter").offsetHeight/2)+"px";
+				};
+				el.className = "click";
+				el.appendChild( document.createTextNode( key + " -> " + bindings[key] + " -> " +String.fromCharCode(bindings[key]) ) );
+				parent.appendChild( el );
+			}
+			document.getElementById("setter").style.left = (window.innerWidth / 2) - (document.getElementById("setter").offsetWidth/2) +"px";
+			document.getElementById("setter").style.top = (window.innerHeight / 2) - (document.getElementById("setter").offsetHeight/2)+"px";
+		}
+
+		function setNew(num) {
+			if (changeTarget !== "") {
+				bindings[changeTarget] = num;
+				document.getElementById("help").innerHTML = "OK. Tu veux changer une autre touche ?";
+				document.getElementById("setter").style.left = (window.innerWidth / 2) - (document.getElementById("setter").offsetWidth/2) +"px";
+				document.getElementById("setter").style.top = (window.innerHeight / 2) - (document.getElementById("setter").offsetHeight/2)+"px";
+				document.getElementById("keysBind").innerHTML = "";
+				const parent = document.getElementById("keysBind");
+				for (let key in bindings) {
+					let el = document.createElement("p");
+					el.id = "change"+key;
+					el.onclick = (e) => {
+						changeTarget = e.path[0].id.split("change")[1];
+						document.getElementById("help").innerHTML = "Maintenant, appuie sur la touche que tu veux utiliser à la place.";
+						document.getElementById("setter").style.left = (window.innerWidth / 2) - (document.getElementById("setter").offsetWidth/2) +"px";
+						document.getElementById("setter").style.top = (window.innerHeight / 2) - (document.getElementById("setter").offsetHeight/2)+"px";
+					};
+					el.className = "click";
+					el.appendChild( document.createTextNode( key + " -> " + bindings[key] + " -> " +String.fromCharCode(bindings[key]) ) );
+					parent.appendChild( el );
+				}
+			}
+		}
+
+		function saveBindings() {
+			localStorage.setItem("settings", JSON.stringify(bindings));
+		}
+
+		function retour() {
+			document.getElementById("setter").style.display = "none";
+			document.getElementById("blur").style.filter = "blur(0px)";
+			document.getElementById("keysBind").innerHTML = "";
+			isBinding = false;
+		}
+		function play() {
+			if (controller !== false) {
+				dispo = true;
+				document.getElementsByTagName("canvas")[0].style.display = "block";
+				menu.style.display = "none";
+				playPage.style.display = "block";
+				document.getElementsByTagName("canvas")[0].style.display = "block";
+				document.getElementById("dead").style.visibility = "visible";
+			}
+		}
+		function retourMenu() {
+			dispo = false;
+			menu.style.display = "flex";
+			playPage.style.display = "none";
+			document.getElementsByTagName("canvas")[0].style.display = "none";
+			document.getElementById("dead").style.visibility = "hidden";
+		}
+
+		function showSkins() {
+			socket.emit("showSkins");
+		}
+		socket.on("showSkins", e=>{
+			let cont = document.getElementById("skins").getElementsByTagName("div")[0];
+			cont.innerHTML = "";
+			for (let i = 0; i < e.length; i++) {
+				let el = document.createElement("p");
+				el.style.cursor = "pointer";
+				el.innerHTML = e[i];
+				el.classList.add("transi");
+				el.classList.add("menu");
+				el.style.margin = "auto";
+				el.title = e[i];
+				el.onclick = (e) => {
+					let skin = e.path[0].title;
+					socket.emit("useSkin", skin);
+				}
+				cont.appendChild(el);
+			}
+			let elRetour = document.createElement("p");
+			elRetour.innerHTML = "Retour";
+			elRetour.classList.add("transi");
+			elRetour.classList.add("menu");
+			elRetour.style.margin = "auto";
+			elRetour.onclick = () => {
+				skinsPage.style.display = "none";
+				menu.style.display = "flex";
+			}
+			cont.appendChild(elRetour);
+			cont.style.position = "relative";
+			setTimeout(()=>{
+				cont.style.top = (innerHeight/2) - (cont.offsetHeight/2) + "px";
+			},100);
+			skinsPage.style.display = "flex";
+			menu.style.display = "none";
+		});
+
+		socket.on("useSkin", (obj, id)=>{
+			controller(1, "changeSkin", id, obj);
+		});
+		socket.emit("genGame");
+	</script>
+</body>
+
+</html>

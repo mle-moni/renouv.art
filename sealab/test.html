@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+
+.item1 { grid-area: titre; }
+.item2 { grid-area: main; }
+.item3 { grid-area: footer; }
+
+.grid-container {
+  display: grid;
+  grid-template-areas:
+    'titre    titre     titre     titre     titre     titre'
+    'main     main      main      main      main      vide1'
+    'main     main      main      main      main      vide1'
+    'main     main      main      main      main      vide1'
+    'main     main      main      main      main      vide1'
+    'main     main      main      main      main      vide1'
+    'vide2    footer    footer    footer    footer    footer';
+  grid-gap: 10px;
+  background-color: #2196F3;
+  padding: 10px;
+}
+
+.grid-container > div {
+  background-color: rgba(255, 255, 255, 0.8);
+  text-align: center;
+  padding: 20px 0;
+  font-size: 30px;
+}
+</style>
+</head>
+<body>
+
+<div class="grid-container">
+  <div class="item1">Sealab Drone Marin</div>
+  <div class="item2">
+    <article>
+      <h2>Le drone</h2>
+      <h4>Pourquoi ce drone ?</h4>
+      <p></p>
+      <p>Enfin une solution facile d'utilisation et performante pour faciliter la prise d'information sur l'etang de Thau.</p>
+      <p>Ce projet à pu voir le jour grâce au travail acharné de notre équipe ITEC, qui a modélisé la solution sur solidworks. Mais aussi grâce aux talents de l'équipe SIN, qui c'est occupé de la partie logicielle et électronique.</p>
+    </article>
+  </div>  
+  <div class="item3">Footer</div>
+</div>
+
+</body>
+</html>

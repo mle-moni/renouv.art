@@ -1,0 +1,361 @@
+<!doctype html>
+<html lang="fr">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width"/>
+	<title>Aquarium ROV</title>
+	<script type="text/javascript" src="../jeux/aquarium/three.min.js"></script>
+	<script src="../jeux/aquarium/GLTFLoader.js"></script>
+	<script src="../jeux/aquarium/gameLoader.js"></script>
+	<style>
+		body { margin: 0; padding: 0; overflow: hidden;}
+		canvas { width: 100%; height: 100%; display: none;}
+		h1 {
+			position: fixed;
+			top: -10px;
+			color: white;
+			font-size: 15px;
+		}
+		h2 {
+			position: fixed;
+			top: 60px;
+			color: white;
+			font-size: 15px;
+		}
+		#instruct {
+			position: fixed;
+			bottom: 10px;
+			right: 0px;
+			color: white;
+			font-size: 13px;
+		}
+		#setter {
+			color: white;
+			position: fixed;
+			top: 0px;
+			left: 0px;
+			display: none;
+			text-align: center;
+			filter: blur(0px);
+			background-color: black;
+			border:0.5px solid #ffffff;
+			padding: 20px;
+		}
+		.click {
+			cursor: pointer;
+		}
+		#dead {
+			position: fixed;
+			visibility: hidden;
+		}
+		.dead {
+			background-color: black;
+			border: 0.5px solid #ffffff;
+			padding: 20px;
+			color: white;
+			cursor: pointer;
+			text-align: center;
+		}
+		#menu {
+			display: flex;
+			position: relative;
+		}
+		.menu {
+			padding: 30px;
+			margin: 20px;
+			position: static;
+			cursor: pointer;
+			border: 0.5px solid #ffffff;
+			font-size: 20px;
+		}
+		.transi {
+			background-color: black;
+			transition: all 1s;
+			color: white;
+		}
+		.transi:hover {
+			background-color: #ffffff;
+			transition: all 1s;
+			color: black;
+		}
+		.arrondi {
+			border-radius:50px;
+			-moz-border-radius:50px;
+			-webkit-border-radius:50px;
+		}
+	</style>
+</head>
+
+<body style="background-color: black;">
+
+	<article id="menu">
+		<div style="margin: auto; display: flex;">
+			<h1 id="enter" class="menu arrondi transi" style="font-size: 30px;" onclick="play()">Entrer</h1>
+		</div>
+	</article>
+	<article id="skins" style="display: none; ">
+		<div style="margin: auto; display: flex; flex-direction: column;">
+			
+		</div>
+	</article>
+	<article id="play" style="display: none;">
+		<div id="blur">
+			<h1 id="fps">FPS : </h1>
+			<h4 id="leaderboard"></h4>
+			<h4 id="instruct">
+				Contrôles : <br>
+				- 'y' pour lock / delock la camera <br>
+				- les fleches pour vous orienter <br>
+				- espace pour prendre de l'élan <br>
+				⟶ <u onclick="personalise()" class="click">personnaliser les contrôles</u>
+			</h4>
+		</div>
+	</article>
+
+	<div id="setter" class="arrondi">
+		<p id="help">Clique sur la touche que tu veux changer :</p>
+		<div id="keysBind"></div>
+		<p onclick="saveBindings()" class="click">Sauvegarder mes préférences</p>
+		<p onclick="retour()" class="click">Retour</p>
+	</div>
+		<!-- SCRIPTS START  -->
+	<script type="text/javascript">
+
+		let rdy = false;
+
+		const socket = "debug";
+
+		const id = "salut :)";
+
+		const menu = document.getElementById("menu");
+		menu.style.top = (innerHeight / 2) - (menu.offsetHeight / 2) + "px";
+		const playPage = document.getElementById("play");
+		
+		let controller = false;
+
+		controller = genGame(id);
+
+		
+
+		const defbindings = {
+			descendre: 38,
+			monter: 40,
+			gauche: 37,
+			droite: 39,
+			avancer: 32,
+			tirer: 65,
+			cameraLock: 89,
+			acceleration: 90,
+			stabilisation: 88,
+			looping: 69,
+			snipe: 82
+		};
+		let bindings;
+		let changeTarget = "";
+		let isBinding = false;
+		if (localStorage.getItem("settings") === null) {
+			bindings = defbindings;
+		} else {
+			bindings = JSON.parse(localStorage.getItem("settings"));
+			for (let key in defbindings) {
+				if (bindings[key] === undefined) {
+					bindings[key] = defbindings[key];
+				}
+			}
+		}
+		
+
+		document.body.onkeydown = e=>{
+			if (controller !== false) {
+				if (isBinding === false) {
+					switch (e.keyCode) {
+						case bindings.descendre: // haut
+							if (key.up === false) {
+								key.up = true;
+							}
+						break;
+						case bindings.monter: // bas
+							if (key.down === false) {
+								key.down = true;
+							}
+						break;
+						case bindings.droite: // droite
+							if (key.right === false) {
+								key.right = true;
+								rz_to0 = false;
+							}
+						break;
+						case bindings.gauche: //gauche
+							if ( key.left === false) {
+								key.left = true;
+								rz_to0 = false;
+							}
+						break;
+						case bindings.avancer: //avancer 
+							if (key.go === false) {
+								key.go = true;
+							}
+						break;
+						case bindings.acceleration: 
+							if (key.acceleration === false) {
+								key.acceleration = true; 
+							}
+						break;
+						case bindings.stabilisation:
+							if (key.stabilisation === false) {
+								key.stabilisation = true;
+							}
+						break;
+						case bindings.looping:
+							if (key.looping === false) {
+								key.looping = true;
+							}
+						break;
+						case bindings.tirer:
+							if (key.tirer === false) {
+								key.tirer = true;
+							}
+						break;
+						case bindings.snipe:
+							if (key.snipe === false) {
+								key.snipe = true;
+							}
+						break;
+
+					}
+				} else {
+					setNew(e.keyCode);
+				}
+			}
+		};
+
+		document.body.onkeyup = e=>{
+			// console.log(e.keyCode)
+			if (isBinding === false) {
+				switch (e.keyCode) {
+					case bindings.descendre: // haut
+						key.up = false;
+					break;
+					case bindings.monter: // bas
+						key.down = false;
+					break;
+					case bindings.droite: // droite
+						key.right = false;
+						if (key.left === false) {
+							rz_to0 = true;
+						}
+					break;
+					case bindings.gauche: //gauche
+						key.left = false;
+						if (key.right === false) {
+							rz_to0 = true;
+						}
+					break;
+					case bindings.cameraLock: // y 
+						cameraLock = !cameraLock;
+					break;
+					case bindings.freiner: //freiner
+						key.break = false;
+					break;
+					case bindings.avancer: //avancer
+						key.go = false;
+					break;
+					case bindings.tirer: 
+						key.tirer = false;
+					break;
+					case bindings.acceleration: 
+						key.acceleration = false;
+					break;
+					case bindings.stabilisation:
+						key.stabilisation = false;
+					break;
+					case bindings.looping:
+						key.looping = false;
+					break;
+					case bindings.snipe:
+						key.snipe = false;
+					break;
+				}
+			}
+		};
+
+		function personalise() {
+			document.getElementById("blur").style.filter = "blur(2px)";
+			document.getElementById("setter").style.display = "block";
+			isBinding = true;
+			const parent = document.getElementById("keysBind");
+			for (let key in bindings) {
+				let el = document.createElement("p");
+				el.id = "change"+key;
+				el.onclick = (e) => {
+					changeTarget = e.path[0].id.split("change")[1];
+					document.getElementById("help").innerHTML = "Maintenant, appuie sur la touche que tu veux utiliser à la place.";
+					document.getElementById("setter").style.left = (window.innerWidth / 2) - (document.getElementById("setter").offsetWidth/2) +"px";
+					document.getElementById("setter").style.top = (window.innerHeight / 2) - (document.getElementById("setter").offsetHeight/2)+"px";
+				};
+				el.className = "click";
+				el.appendChild( document.createTextNode( key + " -> " + bindings[key] + " -> " +String.fromCharCode(bindings[key]) ) );
+				parent.appendChild( el );
+			}
+			document.getElementById("setter").style.left = (window.innerWidth / 2) - (document.getElementById("setter").offsetWidth/2) +"px";
+			document.getElementById("setter").style.top = (window.innerHeight / 2) - (document.getElementById("setter").offsetHeight/2)+"px";
+		}
+
+		function setNew(num) {
+			if (changeTarget !== "") {
+				bindings[changeTarget] = num;
+				document.getElementById("help").innerHTML = "OK. Tu veux changer une autre touche ?";
+				document.getElementById("setter").style.left = (window.innerWidth / 2) - (document.getElementById("setter").offsetWidth/2) +"px";
+				document.getElementById("setter").style.top = (window.innerHeight / 2) - (document.getElementById("setter").offsetHeight/2)+"px";
+				document.getElementById("keysBind").innerHTML = "";
+				const parent = document.getElementById("keysBind");
+				for (let key in bindings) {
+					let el = document.createElement("p");
+					el.id = "change"+key;
+					el.onclick = (e) => {
+						changeTarget = e.path[0].id.split("change")[1];
+						document.getElementById("help").innerHTML = "Maintenant, appuie sur la touche que tu veux utiliser à la place.";
+						document.getElementById("setter").style.left = (window.innerWidth / 2) - (document.getElementById("setter").offsetWidth/2) +"px";
+						document.getElementById("setter").style.top = (window.innerHeight / 2) - (document.getElementById("setter").offsetHeight/2)+"px";
+					};
+					el.className = "click";
+					el.appendChild( document.createTextNode( key + " -> " + bindings[key] + " -> " +String.fromCharCode(bindings[key]) ) );
+					parent.appendChild( el );
+				}
+			}
+		}
+
+		function saveBindings() {
+			localStorage.setItem("settings", JSON.stringify(bindings));
+		}
+
+		function retour() {
+			document.getElementById("setter").style.display = "none";
+			document.getElementById("blur").style.filter = "blur(0px)";
+			document.getElementById("keysBind").innerHTML = "";
+			isBinding = false;
+		}
+		function play() {
+			if (controller !== false && rdy) {
+				dispo = true;
+				document.getElementsByTagName("canvas")[0].style.display = "block";
+				menu.style.display = "none";
+				playPage.style.display = "block";
+				document.getElementsByTagName("canvas")[0].style.display = "block";
+				// controller(0, 'undeadme');
+			} else {
+				document.getElementById("enter").innerHTML = "Chargement en cours";
+			}
+		}
+		function retourMenu() {
+			dispo = false;
+			menu.style.display = "flex";
+			playPage.style.display = "none";
+			document.getElementsByTagName("canvas")[0].style.display = "none";
+			document.getElementById("dead").style.visibility = "hidden";
+		}
+	</script>
+</body>
+
+</html>

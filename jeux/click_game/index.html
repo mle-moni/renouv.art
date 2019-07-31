@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8">
+    <title>Le jeu ou on clique</title>
+    <style>
+        html {
+            user-select: none;
+        }
+        #main {
+            background-color: red;
+            position: absolute;
+        }
+        #blue {
+            background-color: blue;
+            position: absolute;
+        }
+        div {
+            border-radius: 120px;
+            width: 100px;
+            height: 100px;
+        }
+        article {
+            position: absolute;
+            right: 10px;
+            top: 10px;
+            background-color: RGBa(205, 159, 113, 0.5);
+            border-radius: 20px;
+            padding: 20px;
+        }
+        #time {
+            position: absolute;
+            left: 10px;
+            bottom: 30px;
+            font-size: 4em;
+        }
+        nav {
+            position: absolute;
+            right: 10px;
+            bottom: 30px;
+        }
+    </style>
+    </head>
+    <body onselectstart="return false" oncontextmenu="return false" ondragstart="return false" onclick="count()">
+        <div id="main" onmousedown="main('main')"></div>
+        <div id="blue" onmousedown="main('blue')"></div>
+        <nav onclick="switchMusic()"></nav>
+        <article></article>
+        <p id="stats"></p>
+        <h1 id="time"></h1>
+        <audio id="son1" controls></audio>
+    </body>
+    <script>
+        var nombre = 0;
+        var clicks = 1;
+        var sb = true;
+        function count() {
+            if (mainBool) clicks++;
+        }
+        function switchMusic() {
+            nombre++;
+            if (nombre%2 == 1) {
+                document.getElementById("son1").pause();
+            } else {
+                document.getElementById("son1").play();
+            }
+        }
+        window.onload = function() {
+            var drop = document.getElementsByTagName("body")[0];
+            drop.addEventListener('drop', drop_handler, false);
+            drop.addEventListener('dragenter', dragenter_handler, false);
+            drop.addEventListener('dragover', dragenter_handler, false);
+            drop.addEventListener('dragleave', dragleave_handler, false);
+        }        
+        // Événement "dragenter" et "dragover"
+            function dragenter_handler(e) {
+                e.stopPropagation();
+                e.preventDefault();
+            }
+            // Événement "dragleave"
+            function dragleave_handler(e) {
+                e.stopPropagation();
+                e.preventDefault();
+            }
+            // Événement "drop"
+            function drop_handler(e) {
+                e.stopPropagation();
+                e.preventDefault();
+                var files = e.target.files || e.dataTransfer.files;                
+                process_file(files[0]);
+            }
+            function drop_handler(e) {
+                e.stopPropagation();
+                e.preventDefault();   
+                var files = [].slice.call(e.dataTransfer.files);
+                var reader = new FileReader();
+				reader.onload = function (event) {
+                    typageEtLecture(files[0], event.target.result);
+				};
+				reader.readAsDataURL(files[0]);
+            }
+            function typageEtLecture(file, dataUri) {
+                if (/^data:audio/.test(dataUri)) {
+                    table.push({name: file.name, data1: dataUri});
+                    document.getElementsByTagName("nav")[0].innerHTML = "";
+                    for (var i=0; i<table.length; i++) {
+                        document.getElementsByTagName("nav")[0].innerHTML += "<p onclick='playIt("+'\"'+table[i].name+'\"'+")'>"+table[i].name+"</p><br>";
+                    }
+                }
+            }
+        function playIt(name) {
+            for (var i=0; i<table.length;i++) {
+                if (table[i].name == name) {
+                    document.getElementById("son1").src = table[i].data1;
+                }
+            }
+        }
+        document.getElementsByTagName("p")[0].style.width = window.innerWidth + "px";
+        document.getElementsByTagName("p")[0].style.height = window.innerHeight + "px";
+        var increment = 60;
+        var mainBool = false;
+        var interval;
+        var hits = 0;
+        var hits10 = 0;
+        var stats = [];
+        var table = [];
+        var pos = {red: {x: window.innerWidth/2-50, y: window.innerHeight/2-50}, blue: {x: window.innerWidth/2-50, y: window.innerHeight/2+50}};
+        document.getElementById("main").style.left = pos.red.x+"px";
+        document.getElementById("main").style.top = pos.red.y+"px"; 
+        document.getElementById("blue").style.left = pos.blue.x+"px";
+        document.getElementById("blue").style.top = pos.blue.y+"px";
+        function entierAleatoire(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+        var target = {red: {x: entierAleatoire(50, window.innerWidth-300), y: entierAleatoire(150, window.innerHeight-150)}, blue: {x: entierAleatoire(50, window.innerWidth-300), y: entierAleatoire(150, window.innerHeight-150)}};
+        function main(id) {
+            if (mainBool) {
+                hits++;
+                hits10++;
+                document.getElementsByTagName("article")[0].innerHTML = "CLICS : "+clicks+" HITS : "+hits+"<br> PRECISION : "+((Math.floor(hits/clicks*10000))/100) + " %"+"<br>SCORE : "+Math.floor(hits*((Math.floor(hits/clicks*10000))/100));
+                if (id == "main") {
+                    pos.red.x = entierAleatoire(50, window.innerWidth-300);
+                    pos.red.y = entierAleatoire(150, window.innerHeight-150);
+                } else {
+                    pos.blue.x = entierAleatoire(50, window.innerWidth-300);
+                    pos.blue.y = entierAleatoire(150, window.innerHeight-150);
+                }
+            } else if (sb) {
+                sb=false;
+                setTimeout(()=>{
+                    document.getElementById("stats").style.fontSize = "30px";
+                    document.getElementById("stats").innerHTML = "3";
+                    setTimeout(()=>{
+                        document.getElementById("stats").innerHTML = "2";
+                        setTimeout(()=>{
+                            document.getElementById("stats").innerHTML = "1";
+                            setTimeout(()=>{
+                                document.getElementById("stats").innerHTML = "0";
+                                mainBool = true;
+                                for (i=0; i<60; i++) {
+                                    setTimeout(()=>{
+                                        increment --;
+                                        document.getElementById("time").innerHTML = increment;
+                                        if (increment == 0) {
+                                            mainBool = false;
+                                            clearInterval(interval);
+                                            setTimeout(()=>{
+                                                sb=true;
+                                                stats= [];
+                                                hits = 0; hits10=0;
+                                                clicks=1;
+                                                increment=60;
+                                            },10000);
+                                        }
+                                    },1000*i);
+                                }
+                                setTimeout(()=>{
+                                    document.getElementsByTagName("p")[0].style.fontSize = "x-large";
+                                    document.getElementsByTagName("p")[0].innerHTML = "";
+                                },1000);
+                                interval = setInterval(()=> {
+                                    stats.push(hits10);
+                                    var localMoyenne = 0;
+                                    for (var a=0; a<stats.length;a++) {
+                                        localMoyenne += stats[a];
+                                    }
+                                    localMoyenne /= stats.length;
+                                    localMoyenne = Math.floor(localMoyenne*100);
+                                    localMoyenne /= 100;
+                                    document.getElementById("stats").innerHTML = "<br>"+hits10+" Clics/10scd"+"<br>Moyenne : "+localMoyenne+" Clics/10scd";
+                                    localMoyenne = 0;
+                                    hits10 = 0;
+                                }, 10000);
+                            }, 1000);
+                        }, 1000);
+                    }, 1000);
+                }, 1000);
+            }
+        }
+        setInterval(()=> {
+            if (pos.red.x < target.red.x) {
+                pos.red.x++;
+            } else if (pos.red.x > target.red.x) {
+                pos.red.x--;
+            }
+            if (pos.red.y < target.red.y) {
+                pos.red.y++;
+            } else if (pos.red.y > target.red.y) {
+                pos.red.y--;
+            }
+            if (pos.blue.x < target.blue.x) {
+                pos.blue.x++;
+            } else if (pos.blue.x > target.blue.x) {
+                pos.blue.x--;
+            }
+            if (pos.blue.y < target.blue.y) {
+                pos.blue.y++;
+            } else if (pos.blue.y > target.blue.y) {
+                pos.blue.y--;
+            }
+            if (pos.red.x == target.red.x && pos.red.y == target.red.y) {
+                target.red.x = entierAleatoire(50, window.innerWidth-300);
+                target.red.y = entierAleatoire(150, window.innerHeight-150);
+            }
+            if (pos.blue.x == target.blue.x && pos.blue.y == target.blue.y) {
+                target.blue.x = entierAleatoire(50, window.innerWidth-300);
+                target.blue.y = entierAleatoire(150, window.innerHeight-150);
+            }
+            document.getElementById("blue").style.left = pos.blue.x+"px";
+            document.getElementById("blue").style.top = pos.blue.y+"px";
+            document.getElementById("main").style.left = pos.red.x+"px";
+            document.getElementById("main").style.top = pos.red.y+"px";
+        }, 25);
+    </script>
+    </html>

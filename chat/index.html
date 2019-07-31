@@ -1,0 +1,305 @@
+<!doctype html>
+<html lang="fr">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width"/>
+    <title>Renouv.art</title>
+    <link rel="icon" href="/img/logo.png" />
+    <script src="/socket.io/socket.io.js"></script>
+    <link rel="stylesheet" type="text/css" href="/css/main.css">
+	<style type="text/css">
+		#boite {
+			cursor: pointer;
+		}
+		h1 {
+			text-align: center;
+			margin: auto;
+			font-size: 60px;
+			background-color: rgba(254, 159, 109, 0.3);
+			z-index: 4;
+		}
+		header {
+			background-color: #FE9F6D;
+			display: flex;
+			font-family: "Roboto-Bold";
+			position: fixed;
+			width: 100%; 
+			z-index: 5;
+			visibility: hidden;
+		}
+	</style>
+
+	<style type="text/css">
+			#main {
+				display: flex;
+				width: 100%;
+			}
+			#picker {
+				border: solid;
+				border-radius:0px 30px 30px 30px;
+				-moz-border-radius:0px 30px 30px 30px;
+				-webkit-border-radius:0px 30px 30px 30px;
+				padding: 10px;
+				background-color: rgb(90, 81, 77);
+				overflow-y: scroll;
+			}
+			#picker::-webkit-scrollbar-track {
+				border: 1px solid #000;
+				padding: 2px 0;
+				background-color: #404040;
+				opacity: 0.5;
+				visibility: hidden;
+			}
+			#picker::-webkit-scrollbar {
+				width: 10px;
+			}
+			#picker::-webkit-scrollbar-thumb {
+				border-radius:0px 50px 50px 0px;
+				-moz-border-radius:0px 50px 50px 0px;
+				-webkit-border-radius:0px 50px 50px 0px;
+				box-shadow: inset 0 0 6px rgba(0,0,0,.3);
+				background-color: #737272;
+				border: 1px solid #000;
+			}
+			.pick {
+				cursor: pointer;
+				transition: all 1s;
+				padding: 10px;
+				border-radius: 50px;
+				color: #fe9f6d;
+				text-align: center;
+				background-color: rgba(255, 232, 220, 0.1);
+		    }
+		    .pick:hover {
+		    	background-color: rgba(255, 232, 220, 0.5);
+				color: RGBa(52,24,9, 1);
+				border-radius: 0px;
+		    }
+		    @media only screen and (min-width: 600px) {
+				#picker {
+					min-width: 250px;
+					max-width: 250px;
+					position: relative;
+					/* Y PENSER */
+				}
+			    
+			}
+			@media only screen and (max-width: 600px) {
+			    #main {
+					flex-direction: column-reverse;
+				}
+				#picker {
+					margin: auto;
+					width: 100%;
+				}
+				#mainText {
+					padding: 20px;
+				}
+			}
+			hr {
+				border-color: black;
+			}
+			#content {
+				margin: auto;
+				flex-grow: 3;
+				display: flex;
+				flex-direction: column;
+			}
+			#mainText {
+				margin: auto;
+				padding-left: 10px;
+			}
+			.jarrive {
+				display: none;
+			}
+			#descr {
+				text-align: center;
+				font-style: italic;
+			}
+
+			.chatParagraph {
+				text-align: left;
+				margin: 5px;
+			}
+	</style>
+</head>
+	<header >
+		<h1 id="top"><img src="/img/search.png" id="srcImg" width="50" height="50" style="margin-top: 5px; margin-bottom: 5px; position: relative; top: 20px;">
+			<input style="height: 30px; font-family:'Roboto-Thin'; margin-top: 5px; margin-bottom: 5px; padding:10px; font-size:20px; border-width:4px; border-bottom-color: #BCC4CA; border-right-color: #BCC4CA; border-left-color: white;border-top-color: white; border-radius: 10px;" size="20" type="text" placeholder="Recherche sur Renouv.art" ></h1>
+	</header>
+	<p style="display: none;">L'art pour les lycéens, par les lycéens.</p>
+ <div id="js-user" style="position: absolute; top: 100px;">Salut, si tu veux utiliser ce site web, il faudra activer javascript sinon cette page ne pourra pas fonctionner correctement. Si tu ne sais pas comment faire, et bien de manière générale, si tu es sur un ordinateur je te conseille d'utiliser google chrome ou firefox comme navigateur et si tu es sur mobile, je te conseille de n'aller sur ce site qu'a partir d'un ordinateur !</div>
+	<body>
+		<a id="logo" href="/" style="position: fixed; top: 0px; left: 0px; z-index: 6;"><img src="/img/logo.png" width="80" height="80"></a>
+		<a id="post" href="/post">Poster du contenu</a>
+		<article id="main">
+
+			<div id="content">
+				<h6 style="display: inline;">Chat: v0.3</h6>
+				<div id="mainText">
+                    
+                </div>
+                <div style="display: flex; position: fixed; bottom: 0px; left: 0px;" id="contInput">
+                    <div style="margin: auto;">
+                            <input style="height: 30px; font-family:'Roboto-Thin'; margin-top: 5px; margin-bottom: 5px; padding:10px; font-size:20px; border-width:4px; border-bottom-color: #BCC4CA; border-right-color: #BCC4CA; border-left-color: white;border-top-color: white; border-radius: 10px;"
+                             size="20" type="text" placeholder="Dire quelque chose" onsubmit="sendText()" id="chatUserInput">
+                             <div class="pick" onclick="sendText()" style="color: #341809; display: inline; padding: 5px; border: solid; border-width: 1px; ">
+                                Envoyer
+                            </div>
+                    </div>
+				</div>
+				<br><br><br>
+			</div>
+
+			<span id="keur" style="display: none;"></span>
+		</article>
+
+		<!-- 
+			COLOR SCHEME :
+			#FFE8DC
+			#FE9F6D
+			#FC600A
+			#9D3802
+			#341809
+		-->
+
+
+		<!-- SCRIPTS START  -->
+	<script type="text/javascript" src="/system.js"></script>
+	<script type="text/javascript">
+
+		setInterval(()=>{
+			document.getElementById("main").style.width = window.innerWidth-30+"px";
+			let offset = document.getElementsByTagName("h1")[0].offsetHeight;
+			document.getElementById("contInput").style.width = window.innerWidth-10+"px";
+		}, 50);
+
+		let dernierePos = 0;
+		let ticking = false;
+
+		window.addEventListener("scroll",  (e)=>{
+		    dernierePos = window.scrollY;
+		    if (!ticking) {
+		        window.requestAnimationFrame(()=>{
+		            ticking = false;
+		            if (window.innerWidth < 692) {
+		              let alpha = 1;
+		              alpha = (1/(dernierePos/90 - 0.2))-0.1;
+		              if (! (alpha < 1 && alpha > 0) ) {
+		                if (dernierePos < 50) {
+		                  alpha = 1;
+		                }
+		              }
+		              const connectEl = document.getElementById("post");
+		              connectEl.style.backgroundColor = "RGBa(52,24,9,"+alpha+")";
+		              connectEl.style.color = "RGBa(254, 159, 109,"+alpha+")";
+		            }
+		        });
+		    }
+		    ticking = true;
+        });
+        
+        function sendText() {
+			const text = document.getElementById("chatUserInput").value;
+			if (text !== "") {
+				socket.emit("chatTxt", text);
+			}
+			document.getElementById("chatUserInput").value = "";
+		}
+		
+		document.getElementById("chatUserInput").addEventListener("keydown", e=>{
+			if (e.keyCode === 13) {
+				sendText();
+			}
+		});
+
+		socket.emit("getChat");
+
+		socket.on("refreshChat", ()=>{
+			socket.emit("getChat");
+		});
+
+		socket.on("getChat", res=>{
+			document.getElementById("mainText").innerHTML = "";
+			for (let i = 0; i < res.length; i++) {
+				let p = document.createElement("p");
+				p.className = "chatParagraph";
+				let txt = ".b"+res[i].psd+"!b" + " : "+ res[i].txt;
+				let dtxt = document.createTextNode(txt);
+				p.appendChild(dtxt);
+				document.getElementById("mainText").appendChild(p);
+			}
+			transformMarks();
+			let last = scrollY;
+			let scrollInterv = setInterval(()=>{
+				last = scrollY;
+				scrollTo(0, scrollY+15);				
+				if (scrollY === last ) {
+					clearInterval(scrollInterv);
+				}
+			},20);
+		});
+
+		socket.on("msgTxt", obj => {
+			let p = document.createElement("p");
+			p.className = "chatParagraph";
+			let txt = ".b"+obj.psd +"!b" + " : "+ obj.txt;
+			let dtxt = document.createTextNode(txt);
+			p.appendChild(dtxt);
+			document.getElementById("mainText").appendChild(p);
+			transformMarks();
+			let last = scrollY;
+			let scrollInterv = setInterval(()=>{
+				last = scrollY;
+				scrollTo(0, scrollY+15);				
+				if (scrollY === last ) {
+					clearInterval(scrollInterv);
+				}
+			},20);
+		});
+
+		socket.on("chatErr", str=>{
+			let p = document.createElement("p");
+			p.className = "chatErr";
+			let txt = "ERREUR" + " : "+ str;
+			p.innerHTML = txt;
+			document.getElementById("mainText").appendChild(p);
+
+			let last = scrollY;
+			let scrollInterv = setInterval(()=>{
+				last = scrollY;
+				scrollTo(0, scrollY+15);				
+				if (scrollY === last ) {
+					clearInterval(scrollInterv);
+				}
+			},20);
+		});
+
+		document.getElementById("chatUserInput").focus();
+
+		function transformMarks() {
+			let str = document.getElementById("mainText").innerHTML;
+			str = str.replace(/\.b/gi, "<b>");
+			str = str.replace(/\!b/gi, "</b>");
+			str = str.replace(/\.g/gi, "<b>");
+			str = str.replace(/\!g/gi, "</b>");
+			str = str.replace(/\.s/gi, "<u>");
+			str = str.replace(/\!s/gi, "</u>");
+			str = str.replace(/\.u/gi, "<u>");
+			str = str.replace(/\!u/gi, "</u>");
+			str = str.replace(/\.i/gi, "<i>");
+			str = str.replace(/\!i/gi, "</i>");
+			str = str.replace(/\.link1/gi, "<a href='");
+			str = str.replace(/\.link2/gi, "'>");
+			str = str.replace(/\.link3/gi, "</a>");
+			document.getElementById("mainText").innerHTML = str;
+		}
+
+	</script>
+	<script>
+		loadEnd();
+	</script>
+</body>
+
+</html>

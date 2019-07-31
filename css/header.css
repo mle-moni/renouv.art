@@ -1,0 +1,18 @@
+h1 {
+	text-align: center;
+	margin: auto;
+	font-size: 60px;
+	background-color: rgba(254, 159, 109, 0.3);
+	z-index: 4;
+}
+header {
+	background-color: #FE9F6D;
+	display: flex;
+	font-family: "Roboto-Bold";
+	position: fixed;
+	left: 0px;
+	top: 0px;
+	width: 100%; 
+	z-index: 5;
+	visibility: hidden;
+}

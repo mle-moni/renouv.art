@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Simulation projet</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        canvas {
+            background-color: rgb(83, 144, 224);
+            position: fixed;
+            left: 0px;
+            top: 0px;
+            z-index: 2;
+        }
+        h1 {
+            position: fixed;
+            top: -10px;
+            left: 5px;
+            z-index: 3;
+        } 
+        button {
+            position: relative;
+            top: -5px;
+            left: 10px;
+        } 
+    </style>
+
+</head>
+<body>
+    <canvas id="canvas">
+        Il faut mettre à jour le navigateur pour avoir accès au contenu.
+    </canvas>
+    <h1>Clique sur la map et lance le mode automatique :<button onclick="toggleMode()">Mode automatique :</button></h1>
+    
+    <script>
+        const canvas = document.getElementById("canvas");
+        const ctx = canvas.getContext("2d");
+        canvas.width = innerWidth;
+        canvas.height = innerHeight;
+        
+        let manuel = true;
+
+        function toggleMode() {
+            manuel = !manuel;
+        }
+
+        const boat = {
+            posX: innerWidth/2,
+            posY: innerHeight/2,
+            angle: 0
+        };
+
+        const bol = {
+            gauche: false,
+            droite: false
+        };
+
+        const gps = [];
+        let g = {
+            x: 0,
+            y: 0
+        };
+
+        canvas.onclick = (e) => {
+            let clickPos = {
+                x: e.layerX,
+                y: e.layerY
+            };
+            gps.push(clickPos);
+        }
+
+        let numState = {
+            left: 0,
+            right: 0
+        };
+        let oldState = {
+            left: false,
+            right: false
+        };
+        let maneuvre = false;
+        let maneuvreNum = 0;
+        function engineCtrl(str, state) {
+            if (maneuvre === false) {
+                if (str === "left") {
+                    bol.gauche = state;
+                } else if (str === "right") {
+                    bol.droite = state;
+                }
+                if (oldState[str] === state) {
+                    numState[str] ++;
+                } else {
+                    numState[str] = 0;
+                }
+                if (numState[str] > 200) {
+                    if (oldState.left === false || oldState.right === false) {
+                        maneuvre = true;
+                    }
+                }
+                oldState[str] = state;
+            } else {
+                bol.droite = true;
+                bol.gauche = true;
+                maneuvreNum ++;
+                if (maneuvreNum > 50) {
+                    maneuvre = false;
+                    numState.left = 0;
+                    numState.right = 0;
+                    maneuvreNum = 0;
+                }
+            }
+            // console.log(numState[str])
+        }
+        
+        let gpsProcess = false;
+        function goTo(pos) {
+            gpsProcess = true;
+            
+            let v1 = {
+                x: boat.posX+((Math.cos(boat.angle)) *50) - boat.posX,
+                y: boat.posY-((Math.sin(boat.angle)) *50) - boat.posY
+            };
+            g.x = boat.posX+((Math.cos(boat.angle)) *50);
+            g.y = boat.posY-((Math.sin(boat.angle)) *50);
+            let v2 = {
+                x: pos.x - boat.posX,
+                y: pos.y - boat.posY
+            };
+            let areWeThereYet = false;
+            if ((v2.x*v2.x) + (v2.y*v2.y) < 25) { // si la norme de v2 est plus petite que 5 (pas de sqrt pour simplifier le calcul)
+                areWeThereYet = true;
+            }
+            let cosangle = ( (v1.x * v2.x) + (v1.y * v2.y) ) / (Math.sqrt( (v1.x*v1.x) + (v1.y*v1.y) ) * Math.sqrt( (v2.x*v2.x) + (v2.y*v2.y) ));
+            let angle = Math.acos(cosangle);
+            // On cherche a savoir si le point M est à droite ou à gauche de la droite (AB)
+            const point = {
+                a: {
+                    x: boat.posX,
+                    y: boat.posY
+                },
+                b: {
+                    x: boat.posX + v1.x,
+                    y: boat.posY + v1.y
+                },
+                m: {
+                    x: pos.x,
+                    y: pos.y
+                }
+            };
+            let position = Math.sign((point.b.x - point.a.x) * (point.m.y - point.a.y) - (point.b.y - point.a.y) * (point.m.x - point.a.x));
+            position *= -1; // on a besoin d'inverser le signe
+            angle *= position;
+            if (!areWeThereYet) {
+                if (angle < 0.1 && angle > -0.1) {
+                    // console.log("tout droit")
+                    engineCtrl("left", true);
+                    engineCtrl("right", true);
+                } else if (angle < 0) {
+                    // console.log("droite")
+                    engineCtrl("left", false);
+                    engineCtrl("right", true);
+                } else if (angle > 0) {
+                    // console.log("gauche")
+                    engineCtrl("left", true);
+                    engineCtrl("right", false);
+                }
+            } else {
+                gps.shift();
+                engineCtrl("left", false);
+                engineCtrl("right", false);
+            }
+            gpsProcess = false;
+        };
+
+        document.onkeydown = (e)=>{
+            switch(e.keyCode) {
+                case 37: //gauche
+                    bol.gauche = true;
+                break;
+                case 39: //droite
+                    bol.droite = true;
+                break;
+            }
+        };
+        document.onkeyup = (e) => {
+            if (manuel) {
+                switch(e.code) {
+                    case "Space":
+                        bol.avancer = false;
+                    break;
+                    case "ArrowLeft": //gauche
+                        bol.gauche = false;
+                    break;
+                    case "ArrowRight": //droite
+                        bol.droite = false;
+                    break;
+                }
+            }
+        };
+
+        setInterval(()=>{
+            if (bol.gauche) {
+                boat.angle += 0.05;
+                boat.posX += Math.cos(boat.angle) * 2.3;
+                boat.posY -= Math.sin(boat.angle) * 2.3;
+            }
+            if (bol.droite) {
+                boat.angle -= 0.05
+                boat.posX += Math.cos(boat.angle) * 2.3;
+                boat.posY -= Math.sin(boat.angle) * 2.3;
+            }
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = "black";
+            ctx.beginPath();
+            ctx.arc(boat.posX, boat.posY, 10, 0, Math.PI*2);
+            ctx.fill();
+            
+            ctx.strokeStyle = "red";
+            ctx.beginPath();
+            ctx.moveTo(boat.posX, boat.posY);
+            ctx.lineTo(boat.posX + (Math.cos(boat.angle)) *10, boat.posY - (Math.sin(boat.angle))*10 );
+            ctx.stroke();
+
+            if (gps.length > 0 && gpsProcess === false && manuel === false) {
+                goTo(gps[0]);
+            }
+            
+            for (let i = 0; i < gps.length; i ++) {
+                ctx.fillStyle = "red";
+                ctx.beginPath();
+                ctx.arc(gps[i].x, gps[i].y, 3, 0, Math.PI*2);
+                ctx.fill();
+            }
+            ctx.fillStyle = "green";
+            ctx.beginPath();
+            ctx.arc(g.x, g.y, 3, 0, Math.PI*2);
+            ctx.fill();
+        }, 40);
+
+
+
+
+
+
+
+        // let p1 = {
+            //     x: boat.posX + (Math.cos(boat.angle)) *10,
+            //     y: boat.posY - (Math.sin(boat.angle))*10
+            // };
+            // let v1 = {
+            //     x: p1.x - boat.posX,
+            //     y: p1.y - boat.posY
+            // };
+            // let v2 = {
+            //     x: 1,
+            //     y: 0 
+            // };
+            // let cosangle = (v1.x * v2.x) + (v1.y * v2.y) / Math.sqrt( (v1.x*v1.x) + (v1.y*v1.y) ) * Math.sqrt( (v2.x*v2.x) + (v2.y*v2.y) );
+    </script>
+</body>
+</html>
