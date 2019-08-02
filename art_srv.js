@@ -7,6 +7,9 @@ const connection = require("./srv_files/connection");
 const admin = require("./srv_files/admin");
 const upload = require("./srv_files/upload");
 const chat = require("./srv_files/chat");
+const laby = require("./srv_files/laby");
+const likes = require("./srv_files/likes");
+const notifs = require("./srv_files/notifs");
 
 const Analyse = {
     connnected: 0,
@@ -319,106 +322,15 @@ MongoClient.connect(url, {
         });
 
         socket.on("resetLikes", ()=>{
-            if (socket.hasOwnProperty("psd")) {
-                if (socket.psd === "admin.mayeul") {
-                    dbo.collection("data").updateMany({}, {$set: {likes: 0, loveFrom: ""}}, function(err, res) {
-                        if (err) throw err;
-                    });
-                }
-            }
+            likes.reset(socket, dbo);
         });
 
         socket.on("getLikes", (psd, title)=>{
-            dbo.collection("data").find({
-                auteur: psd
-            }).toArray(function(err, result) {
-                if (err) throw err;
-                if (result !== null) {
-                    for (let i = 0; i < result.length; i++) {
-                        if (result[i].titre === title) {
-                            if (isNaN(result[i].likes)) {
-                                socket.emit("getLikes", 0);
-                            } else {
-                                socket.emit("getLikes", result[i].likes);
-                            }
-                        }
-                    }
-                }
-            });
+            likes.get(psd, title, socket, dbo);
         });
 
         socket.on("addLike", (psd, title)=>{
-            let notifInfo = "";
-            if (socket.hasOwnProperty("psd")) {
-                dbo.collection("data").find({
-                    auteur: psd
-                }).toArray(function(err, result) {
-                    if (err) throw err;
-                    if (result !== null) {
-                        for (let i = 0; i < result.length; i++) {
-                            if (result[i].titre === title) {
-                                notifInfo = result[i].type;
-                                let likesNow = result[i].likes;
-                                let lovedBy = result[i].loveFrom;
-                                let contentId = result[i]["_id"];
-                                if (isNaN(likesNow)) {
-                                    likesNow = 0;
-                                    lovedBy = "";
-                                }
-                                let testPsd = new RegExp("__"+socket.psd+"__");
-                                if (testPsd.test(lovedBy) === false) {
-                                    dbo.collection("data").updateOne({_id: contentId}, {
-                                        $set: {
-                                            likes: likesNow+1,
-                                            loveFrom: lovedBy+"__"+socket.psd+"__"
-                                        }
-                                    }, function(err, res) {
-                                        if (err) throw err;
-                                        socket.emit("getLikes", likesNow+1);
-                                        socket.broadcast.emit("sendGetLikes");
-                                        dbo.collection("account").findOne({psd: psd}, function(err, result) {
-                                            if (err) throw err;
-                                            const obj = result;
-                                            let hrefTxt = notifInfo;
-                                            if (notifInfo === "ecrit") {
-                                                hrefTxt = "ecriture";
-                                            }
-                                            hrefTxt += "!oeuvre="+encodeURI(psd)+"&&&"+encodeURI(title);
-                                            let notifObj = {
-                                                txt: socket.psd + " à aimé votre " + notifInfo + " nommé(e) " + title + ".",
-                                                href: hrefTxt
-                                            };
-                                            if (obj.notifs === undefined) {
-                                                obj.notifs = {
-                                                    arr: [notifObj],
-                                                    num: 1
-                                                };
-                                            } else {
-                                                obj.notifs.num ++;
-                                                obj.notifs.arr.unshift(notifObj);
-                                                if (obj.notifs.arr.length > 20) {
-                                                    obj.notifs.arr.pop();
-                                                }
-                                            }
-                                            dbo.collection("account").updateOne({psd: psd}, {
-                                                $set: {
-                                                    totalLikes: result.totalLikes+1,
-                                                    moneyLikes: result.moneyLikes+1,
-                                                    notifs: obj.notifs
-                                                }
-                                            }, function(err, res) {
-                                                // on a mis a jour les notifs et les likes !
-                                            });
-                                        });
-                                    });
-                                }
-                            }
-                        }
-                    }
-                });
-            } else {
-                socket.emit("logAndComeBack");
-            }
+            likes.add(psd, title, socket, dbo);
         });
         
         socket.on("concours", idC=>{
@@ -479,42 +391,15 @@ MongoClient.connect(url, {
         });
 
         socket.on("saveLaby", (obj)=>{
-            const newmap = []; 
-            for (let i = 0; i < obj.length; i++) {
-                for (let j = 0; j < obj[i].length; j++) {
-                    newmap.push({x: j, y: i, map: obj[i][j]});
-                }
-            }
-            dbo.collection("labyMap1").deleteMany({}, function(err, obj) {
-                if (err) throw err;
-                console.log(obj.result.n + " document(s) deleted");
-                dbo.collection("labyMap1").insertMany(newmap, function(err, res) {
-                    if (err) throw err;
-                    console.log("Number of documents inserted: " + res.insertedCount);
-                });
-            });
+            laby.save(obj, socket, dbo);
         });
 
-        socket.on("giveLabyMap", (x,y)=>{
-            if (typeof(x) === "number" && typeof(y) === "number") {
-                dbo.collection("labyMap1").find({x:x}).toArray(function(err, result) {
-                    if (err) throw err;
-                    let num = 0;
-                    for (num; num < result.length; num++) {
-                        if (result[num].y === y) {
-                            break;
-                        }
-                    }
-                    socket.emit("loadLaby", result[num]);
-                });
-            }
+        socket.on("giveLabyMap", (x, y)=>{
+            laby.giveMap(x, y, socket, dbo);
         });
 
         socket.on("getSave", ()=>{
-            dbo.collection("labyMap1").find({}).toArray(function(err, result) {
-                if (err) throw err;
-                socket.emit("getSave", result);
-            });
+            laby.getSave(socket, dbo);
         });
 
         socket.on("getComments", query=>{
@@ -668,31 +553,19 @@ MongoClient.connect(url, {
                 socket.emit("logAndComeBack");
             }
         });
-
+        
         socket.on("getNotifs", ()=>{
-            if (socket.hasOwnProperty("psd")) {
-                dbo.collection("account").findOne({psd: socket.psd}, function(err, result) {
-                    if (err) throw err;
-                    if (result.hasOwnProperty("notifs")) {
-                        socket.emit("notif", result.notifs);
-                    }
-                });
-            }
+            notifs.get(socket, dbo);
         });
-
+        
         socket.on("emptyNotifs", ()=>{
-            if (socket.hasOwnProperty("psd")) {
-                dbo.collection("account").updateOne({psd: socket.psd}, {
-                    $set: {
-                        "notifs.num" : 0
-                    }
-                }, function(err, res) {
-                    // on vient de vider le comptage des notifications non lues
-                    socket.emit("emptyNotifs");
-                });
-            }
+            notifs.empty(socket, dbo);
         });
-
+        
+        socket.on("newNotif", (pseudo, txt, href)=>{
+            notifs.add(pseudo, txt, href, socket, dbo);
+        });
+        
         socket.on("gameChat", (txt)=>{
             let valid = true;
             if (txt === "" || /^ *$/.test(txt) || txt.length > 1000) {
@@ -738,40 +611,6 @@ MongoClient.connect(url, {
                 socket.broadcast.emit("ladderTournois", res);
                 socket.emit("ladderTournois", res);
             });
-        });
-
-        socket.on("newNotif", (pseudo, txt, href)=>{
-            if (socket.hasOwnProperty("psd")) {
-                if (socket.psd === "Redz" || socket.psd === "Le gentil développeur" || socket.psd === "admin.mayeul") {
-                    dbo.collection("account").findOne({psd: pseudo}, function(err, result) {
-                        if (err) throw err;
-                        const obj = result;
-                        let notifObj = {
-                            txt: txt,
-                            href: href
-                        };
-                        if (obj.notifs === undefined) {
-                            obj.notifs = {
-                                arr: [notifObj],
-                                num: 1
-                            };
-                        } else {
-                            obj.notifs.num ++;
-                            obj.notifs.arr.unshift(notifObj);
-                            if (obj.notifs.arr.length > 20) {
-                                obj.notifs.arr.pop();
-                            }
-                        }
-                        dbo.collection("account").updateOne({psd: pseudo}, {
-                            $set: {
-                                notifs: obj.notifs
-                            }
-                        }, function(err, res) {
-                            // on a mis a jour les notifs et les likes !
-                        });
-                    });
-                }
-            }
         });
 
 
