@@ -343,8 +343,10 @@ function rayCast(column, player, angle) {
 	{
 		drawRay(player, castVars.repX, castVars.repY);
 		// draw walls
-		let wallVisionHeight = (world.tileSize / antiFish(castVars, angle)) * world.distanceToPjtPlane;
-		ctx.fillStyle = "black";
+		const realDistance = antiFish(castVars, angle);
+		let wallVisionHeight = (world.tileSize / realDistance) * world.distanceToPjtPlane;
+		let color = (realDistance * 255) / (world.tileSize * 12);
+		ctx.fillStyle = `RGB(${color}, ${color}, ${color})`;
 		ctx.fillRect(canvas.width - column, (canvas.height / 2) - (wallVisionHeight / 2), 1, wallVisionHeight);
 	}
 }
