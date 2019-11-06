@@ -1,0 +1,18 @@
+html {
+	height: 99%;
+}
+
+body {
+	display: flex;
+	height: 99%;
+}
+#canvas {
+	margin: auto;
+	background-color: beige;
+}
+#miniCanvas {
+	position: absolute;
+	left: 0px;
+	top: 0px;
+	background-color: black;
+}
