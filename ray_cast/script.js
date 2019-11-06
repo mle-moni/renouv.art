@@ -317,7 +317,7 @@ function findVertical(castVars, angle) {
 	}
 }
 
-function antiFish(castVars) {
+function antiFish(castVars, rayAngle) {
 	// if (castVars.faceUp && castVars.faceLeft) {
 	// 	return (Math.abs(player.x - x) / Math.sin(castVars.angle));
 	// } else if (castVars.faceDown && castVars.faceLeft) {
@@ -327,7 +327,7 @@ function antiFish(castVars) {
 	// } else {
 	// 	return (Math.abs(player.x - x) / Math.cos(castVars.angle));
 	// }
-	return (castVars.distance);
+	return (castVars.distance * Math.cos(Math.abs(player.angle - rayAngle)));
 }
 
 function rayCast(column, player, angle) {
