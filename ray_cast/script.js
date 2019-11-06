@@ -327,7 +327,7 @@ function antiFish(castVars) {
 	// } else {
 	// 	return (Math.abs(player.x - x) / Math.cos(castVars.angle));
 	// }
-	return (castVars.distance * Math.cos(castVars.angle));
+	return (castVars.distance);
 }
 
 function rayCast(column, player, angle) {
