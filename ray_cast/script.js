@@ -326,7 +326,7 @@ function rayCast(column, player, angle) {
 	const castVars = new CastVars(angle);
 	findHorizontal(castVars, angle);
 	findVertical(castVars, angle);
-	console.log(`rep x = ${castVars.repX} rep y = ${castVars.repY} distance is ${castVars.distance}`);
+	// console.log(`rep x = ${castVars.repX} rep y = ${castVars.repY} distance is ${castVars.distance}`);
 	drawRay(player, castVars.repX, castVars.repY);
 }
 
