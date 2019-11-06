@@ -38,6 +38,7 @@ class Map {
 		this.NUM_ROWS = this.walls.length;
 		miniCanvas.width = this.NUM_COLLS * this.tileSize;
 		miniCanvas.height = this.NUM_ROWS * this.tileSize;
+		this.distanceToPjtPlane = (canvas.width / 2) / Math.tan(Math.PI / 6);
 	}
 	display() {
 		minimap.clearRect(0, 0, miniCanvas.width, miniCanvas.height);
@@ -55,6 +56,7 @@ class Map {
 		}
 	}
 	render(player) {
+		ctx.clearRect(0, 0, canvas.width, canvas.height);
 		this.display();
 		player.display(this);
 		castAll(player);
@@ -152,14 +154,11 @@ class Player {
 }
 
 function drawRay(player, x, y) {
-	if (x >= 0 && y >= 0)
-	{
-		minimap.strokeStyle = "yellow";
-		minimap.beginPath();
-		minimap.moveTo(player.x, player.y);
-		minimap.lineTo(x, y);
-		minimap.stroke();
-	}
+	minimap.strokeStyle = "yellow";
+	minimap.beginPath();
+	minimap.moveTo(player.x, player.y);
+	minimap.lineTo(x, y);
+	minimap.stroke();
 }
 
 class CastVars {
@@ -327,7 +326,14 @@ function rayCast(column, player, angle) {
 	findHorizontal(castVars, angle);
 	findVertical(castVars, angle);
 	// console.log(`rep x = ${castVars.repX} rep y = ${castVars.repY} distance is ${castVars.distance}`);
-	drawRay(player, castVars.repX, castVars.repY);
+	if (castVars.repX >= 0 && castVars.repY >= 0)
+	{
+		drawRay(player, castVars.repX, castVars.repY);
+		// draw walls
+		let wallVisionHeight = (world.tileSize / castVars.distance) * world.distanceToPjtPlane;
+		ctx.fillStyle = "black";
+		ctx.fillRect(column, (canvas.height / 2) - (wallVisionHeight / 2), 1, wallVisionHeight);
+	}
 }
 
 function castAll(player) {
