@@ -317,6 +317,19 @@ function findVertical(castVars, angle) {
 	}
 }
 
+function antiFish(castVars) {
+	// if (castVars.faceUp && castVars.faceLeft) {
+	// 	return (Math.abs(player.x - x) / Math.sin(castVars.angle));
+	// } else if (castVars.faceDown && castVars.faceLeft) {
+	// 	return (Math.abs(player.x - x) / Math.cos(castVars.angle));
+	// } else if (castVars.faceDown && castVars.faceRight) {
+	// 	return (Math.abs(player.x - x) / Math.sin(castVars.angle));
+	// } else {
+	// 	return (Math.abs(player.x - x) / Math.cos(castVars.angle));
+	// }
+	return (castVars.distance * Math.cos(castVars.angle));
+}
+
 function rayCast(column, player, angle) {
 	angle %= (2 * Math.PI);
 	if (angle < 0)
@@ -330,9 +343,9 @@ function rayCast(column, player, angle) {
 	{
 		drawRay(player, castVars.repX, castVars.repY);
 		// draw walls
-		let wallVisionHeight = (world.tileSize / castVars.distance) * world.distanceToPjtPlane;
+		let wallVisionHeight = (world.tileSize / antiFish(castVars)) * world.distanceToPjtPlane;
 		ctx.fillStyle = "black";
-		ctx.fillRect(column, (canvas.height / 2) - (wallVisionHeight / 2), 1, wallVisionHeight);
+		ctx.fillRect(canvas.width - column, (canvas.height / 2) - (wallVisionHeight / 2), 1, wallVisionHeight);
 	}
 }
 
