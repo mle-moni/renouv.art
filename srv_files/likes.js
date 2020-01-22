@@ -92,7 +92,6 @@ function add(psd, title, socket, dbo) {
                                     dbo.collection("account").updateOne({psd: psd}, {
                                         $set: {
                                             totalLikes: result.totalLikes+1,
-                                            moneyLikes: result.moneyLikes+1,
                                             notifs: obj.notifs
                                         }
                                     }, function(err, res) {
