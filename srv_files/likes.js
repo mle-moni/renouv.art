@@ -1,3 +1,5 @@
+const crypt = require("../../global/crypt");
+
 module.exports = {
     reset: reset,
     get: get,
@@ -65,7 +67,7 @@ function add(psd, title, socket, dbo) {
                                 if (err) throw err;
                                 socket.emit("getLikes", likesNow+1);
                                 socket.broadcast.emit("sendGetLikes");
-                                dbo.collection("account").findOne({psd: psd}, function(err, result) {
+                                dbo.collection("account").findOne({psd: crypt.encode(psd)}, function(err, result) {
                                     if (err) throw err;
                                     const obj = result;
                                     let hrefTxt = notifInfo;
@@ -89,7 +91,7 @@ function add(psd, title, socket, dbo) {
                                             obj.notifs.arr.pop();
                                         }
                                     }
-                                    dbo.collection("account").updateOne({psd: psd}, {
+                                    dbo.collection("account").updateOne({psd: crypt.encode(psd)}, {
                                         $set: {
                                             totalLikes: result.totalLikes+1,
                                             notifs: obj.notifs

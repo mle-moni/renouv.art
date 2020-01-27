@@ -1,3 +1,5 @@
+const crypt = require("../../global/crypt");
+
 module.exports = {
     getAll: getAll,
     newMsg: newMsg,
@@ -23,42 +25,7 @@ function newMsg(txt, socket, dbo) {
                 if (err) throw err;
                 socket.emit("msgTxt", myobj);
                 socket.broadcast.emit("msgTxt", myobj);
-                // on enregistre la notification dans tous les comptes des utilisateurs
-                dbo.collection("account").find({}).toArray(function(err, result) {
-                    let notifObj = {
-                        txt: socket.psd + " à écrit dans le chat général.",
-                        href: "chat"
-                    };
-                    for (let i = 0; i < result.length; i++) {
-                        if (result[i].psd !== socket.psd) {
-                            let obj = result[i];
-                            if (obj.notifs === undefined) {
-                                obj.notifs = {
-                                    arr: [notifObj],
-                                    num: 1
-                                };
-                            } else {
-                                obj.notifs.num ++;
-                                if (obj.notifs.arr == undefined) {
-                                    obj.notifs.arr = [];
-                                }
-                                obj.notifs.arr.unshift(notifObj);
-                                if (obj.notifs.arr.length > 20) {
-                                    obj.notifs.arr.pop();
-                                }
-                            }
-                            const objID = obj["_id"];
-                            const myquery = { "_id": objID };
-                            const newvalues = obj;
-                            dbo.collection("account").replaceOne(myquery, newvalues, function(err, res) {
-                                if (err) throw err;
-                                socket.broadcast.emit("notifDispo");
-                            });
-                        }
-                    }
-                });
             });
-
         } else {
             socket.emit("chatErr", "Vous devez être connecté : <a style='color: blue; cursor: pointer;' onclick=\"brb()\">Se connecter</a>");
         }

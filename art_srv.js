@@ -3,13 +3,14 @@ const fs = require('fs');
 const MongoClient = require('mongodb').MongoClient;
 const url = "mongodb://art_admin:bonjour_BONJOUR_NANMAISREPONDFDP@localhost:27017/?authSource=art";
 const handler = require('./srv_files/handler').handler;
-const connection = require("./srv_files/connection");
+const connection = require("../global/connection");
 const admin = require("./srv_files/admin");
 const upload = require("./srv_files/upload");
 const chat = require("./srv_files/chat");
 const laby = require("./srv_files/laby");
 const likes = require("./srv_files/likes");
 const notifs = require("./srv_files/notifs");
+const crypt = require("../global/crypt");
 
 const Analyse = {
     connnected: 0,
@@ -433,7 +434,7 @@ MongoClient.connect(url, {
                                 }
                             }
 
-                            dbo.collection("account").findOne({psd: obj.auteur},  function(err, result) {
+                            dbo.collection("account").findOne({psd: crypt.encode(obj.auteur)},  function(err, result) {
                                 const acc = result;
                                 let hrefTxt = notifInfo;
                                 if (notifInfo === "ecrit") {
