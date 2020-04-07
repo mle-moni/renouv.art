@@ -95,7 +95,8 @@ function genScope() {
 					debug: false
 				}
 			},
-			scene: [ MainMenu, Level2, Level1, Level3 ]
+			scene: [ MainMenu, Level2, Level1, Level3 ],
+			pixelArt: true
 		};
 	
 		const game = new Phaser.Game(config);

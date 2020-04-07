@@ -45,10 +45,14 @@ class Level1 extends Phaser.Scene {
                 document.getElementsByTagName("canvas")[0].style.visibility = "visible";
             }
             if (e.key === "q" && canRestart) {
-                this.goToMap("MainMenu");
+				this.goToMap("MainMenu");
+				document.getElementById("ladder").style.visibility = "hidden";
+                document.getElementsByTagName("canvas")[0].style.visibility = "visible";
             }
             if (e.key === "A") {
-                this.goToMap("Level2");
+				this.goToMap("Level2");
+				document.getElementById("ladder").style.visibility = "hidden";
+                document.getElementsByTagName("canvas")[0].style.visibility = "visible";
             }
         });
 
@@ -69,10 +73,16 @@ class Level1 extends Phaser.Scene {
         this.physics.add.collider(solidLayer, this.player, (sprite, tile)=>{
             if (tile.properties.hasOwnProperty("win")) {
                 if (self.notWonYet) {
+					self.notWonYet = false;
                     let dTime = Math.round((Date.now()-self.timeStart)/10)/100;
                     let score = ".iMon score est de : "+self.jumps+" sauts et "+Math.round((Date.now()-self.timeStart)/10)/100+" secondes sur la map 1 !!i";
-                    sendTxt(score);
-                    this.goToMap(tile.properties.win);
+					self.game.socket.emit("scoreTournois", {jumps: self.jumps, time: dTime, password: self.game.password}, 1);
+					scoreActuel.score = dTime * self.jumps * 100;
+                    scoreActuel.jumps = self.jumps;
+                    scoreActuel.time = dTime;
+					sendTxt(score);
+					document.getElementById("ladder").style.visibility = "visible";
+                    document.getElementsByTagName("canvas")[0].style.visibility = "hidden";
                 }
             } else if (tile.properties.hasOwnProperty("dead")) {
                 this.goToMap("Level1");

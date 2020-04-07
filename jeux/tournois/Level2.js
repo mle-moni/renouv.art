@@ -47,10 +47,14 @@ class Level2 extends Phaser.Scene {
                 document.getElementsByTagName("canvas")[0].style.visibility = "visible";
             }
             if (e.key === "q" && canRestart) {
-                this.goToMap("MainMenu");
+				this.goToMap("MainMenu");
+				document.getElementById("ladder").style.visibility = "hidden";
+                document.getElementsByTagName("canvas")[0].style.visibility = "visible";
             }
             if (e.key === "A") {
-                this.goToMap("Level1");
+				this.goToMap("Level1");
+				document.getElementById("ladder").style.visibility = "hidden";
+                document.getElementsByTagName("canvas")[0].style.visibility = "visible";
             }
         });
 
@@ -78,7 +82,7 @@ class Level2 extends Phaser.Scene {
                     self.canMove = false;
                     let dTime = Math.round((Date.now()-self.timeStart)/10)/100;
                     let score = ".iMon score est de : "+self.jumps+" sauts et "+Math.round((Date.now()-self.timeStart)/10)/100+" secondes sur la map 2 !!i";
-                    // self.game.socket.emit("scoreTournois", {jumps: self.jumps, time: dTime, password: self.game.password});
+                    self.game.socket.emit("scoreTournois", {jumps: self.jumps, time: dTime, password: self.game.password}, 2);
                     scoreActuel.score = dTime * self.jumps * 100;
                     scoreActuel.jumps = self.jumps;
                     scoreActuel.time = dTime;

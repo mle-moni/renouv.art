@@ -585,7 +585,10 @@ MongoClient.connect(url, {
             }
         });
 
-        socket.on("scoreTournois", e=>{
+        socket.on("scoreTournois", (e, n)=>{
+			if (n < 1 || n > 2) {
+				return ;
+			}
             if (socket.hasOwnProperty("psd") && e.hasOwnProperty("jumps") && e.hasOwnProperty("time") && e.hasOwnProperty("password")) {
                 if (e.password === socket.id) {
                     const myobj = {
@@ -594,9 +597,9 @@ MongoClient.connect(url, {
                         time: e.time,
                         score: Math.round(e.jumps*e.time*100)
                     };
-                    dbo.collection("tournois2").insertOne(myobj, function(err, res) {
+                    dbo.collection("tournois"+n).insertOne(myobj, function(err, res) {
                         if (err) throw err;
-                        dbo.collection("tournois2").find().sort({score: 1}).toArray((err, res)=>{
+                        dbo.collection("tournois"+n).find().sort({score: 1}).toArray((err, res)=>{
                             if (err) throw err;
                             socket.broadcast.emit("ladderTournois", res);
                             socket.emit("ladderTournois", res);
