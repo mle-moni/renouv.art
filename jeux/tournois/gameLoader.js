@@ -40,18 +40,18 @@ function setChat() {
 			canRestart = true;
 		});
 		chatEl.style.color = "white";
-		chatBody.style.maxHeight = (innerHeight - document.getElementsByTagName("canvas")[0].height - 20 - chatTitle.offsetHeight - chatInput.offsetHeight)-150 +"px";
+		chatBody.style.maxHeight = (innerHeight - document.getElementsByTagName("canvas")[0].offsetHeight - 20 - chatTitle.offsetHeight - chatInput.offsetHeight)-150 +"px";
 		chatBody.style.overflow = "auto";
 		chatEl.appendChild(chatTitle);
 		chatEl.appendChild(chatBody);
 		chatEl.appendChild(chatInput);
 		chatEl.style.position = "relative";
 		chatEl.style.left = innerWidth/2-500 +"px";
-		chatEl.style.width = document.getElementsByTagName("canvas")[0].width+"px";
-		chatEl.style.height = (innerHeight - document.getElementsByTagName("canvas")[0].height - 20)-50 +"px";
+		chatEl.style.width = document.getElementsByTagName("canvas")[0].offsetWidth+"px";
+		chatEl.style.height = (innerHeight - document.getElementsByTagName("canvas")[0].offsetHeight - 20)-50 +"px";
 		chatEl.style.backgroundColor = "black";
 		document.body.appendChild(chatEl);
-		ladder.style.width = document.getElementsByTagName("canvas")[0].width+"px";
+		ladder.style.width = document.getElementsByTagName("canvas")[0].offsetWidth+"px";
 		ladder.style.overflow = "auto";
 		ladder.style.position = "absolute";
 		ladder.style.left = innerWidth/2-500 +"px";
@@ -86,8 +86,8 @@ function genScope() {
 	
 		const config = {
 			type: Phaser.CANVAS,
-			width: 1000,
-			height: 400,
+			width: 500,
+			height: 200,
 			physics: {
 				default: "arcade",
 				arcade: {
@@ -96,7 +96,8 @@ function genScope() {
 				}
 			},
 			scene: [ MainMenu, Level2, Level1, Level3 ],
-			pixelArt: true
+			pixelArt: true,
+			zoom: 2
 		};
 	
 		const game = new Phaser.Game(config);
