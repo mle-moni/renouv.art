@@ -586,7 +586,7 @@ MongoClient.connect(url, {
         });
 
         socket.on("scoreTournois", (e, n)=>{
-			if (n < 1 || n > 2) {
+			if (typeof(n) !== "number" || n < 1 || n > 4) {
 				return ;
 			}
             if (socket.hasOwnProperty("psd") && e.hasOwnProperty("jumps") && e.hasOwnProperty("time") && e.hasOwnProperty("password")) {
