@@ -25,8 +25,8 @@ class Level1 extends Phaser.Scene {
             jumpSetter(0);
             clearInterval(self.liveInterval);
             self.available = false;
-            self.game.socket.off("livePos", self.liveHandler);
-            self.game.socket.off("deletePlayer", self.delHandler);
+            self.game.socket.on("livePos", self.liveHandler);
+            self.game.socket.on("deletePlayer", self.delHandler);
             this.scene.start(str);
         }
 

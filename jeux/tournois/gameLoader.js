@@ -95,7 +95,7 @@ function genScope() {
 					debug: false
 				}
 			},
-			scene: [ MainMenu, Level2, Level1, Level3 ],
+			scene: [ MainMenu, Level2, Level1, Level3, Level4 ],
 			pixelArt: true,
 			zoom: 2
 		};

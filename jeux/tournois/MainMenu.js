@@ -48,7 +48,7 @@ class MainMenu extends Phaser.Scene {
                 this.goToMap("MainMenu");
             }
             if (e.key === "A") {
-                this.goToMap("Level2");
+                this.goToMap("Level1");
             }
         });
 

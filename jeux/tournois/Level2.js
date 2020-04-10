@@ -52,7 +52,7 @@ class Level2 extends Phaser.Scene {
                 document.getElementsByTagName("canvas")[0].style.visibility = "visible";
             }
             if (e.key === "A") {
-				this.goToMap("Level1");
+				this.goToMap("Level4");
 				document.getElementById("ladder").style.visibility = "hidden";
                 document.getElementsByTagName("canvas")[0].style.visibility = "visible";
             }
