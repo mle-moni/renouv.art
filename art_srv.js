@@ -595,7 +595,7 @@ MongoClient.connect(url, {
                         psd: socket.psd,
                         jumps: e.jumps,
                         time: e.time,
-                        score: Math.round(e.jumps*e.time*100)
+                        score: Math.round((e.jumps+e.time)*100)
                     };
                     dbo.collection("tournois"+n).insertOne(myobj, function(err, res) {
                         if (err) throw err;

@@ -77,7 +77,7 @@ class Level1 extends Phaser.Scene {
                     let dTime = Math.round((Date.now()-self.timeStart)/10)/100;
                     let score = ".iMon score est de : "+self.jumps+" sauts et "+Math.round((Date.now()-self.timeStart)/10)/100+" secondes sur la map 1 !!i";
 					self.game.socket.emit("scoreTournois", {jumps: self.jumps, time: dTime, password: self.game.password}, 1);
-					scoreActuel.score = dTime * self.jumps * 100;
+					scoreActuel.score = (dTime + self.jumps) * 100;
                     scoreActuel.jumps = self.jumps;
                     scoreActuel.time = dTime;
 					sendTxt(score);
